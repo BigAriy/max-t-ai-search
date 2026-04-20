@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Telegram Archive</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Шапка с профилем -->
+    <header id="app-header">
+        <div class="user-info">
+            <span id="user-name">Загрузка...</span>
+        </div>
+        <button id="settings-btn">⚙️</button>
+    </header>
+
+    <main id="app-container">
+        <!-- Гармошка 1: ИСТОЧНИКИ -->
+        <div class="accordion active" id="source-section">
+            <div class="accordion-header">
+                <span class="step-num">1</span>
+                <h3>ИСТОЧНИКИ</h3>
+                <span class="status-badge" id="source-status">Выбрано: 0</span>
+            </div>
+            <div class="accordion-content">
+                <div id="groups-list">
+                    <!-- Сюда JS добавит группы -->
+                </div>
+                <button class="btn-secondary" id="add-group-btn">+ Добавить группу</button>
+            </div>
+        </div>
+
+        <!-- Гармошка 2: ДЕЙСТВИЕ -->
+        <div class="accordion" id="action-section">
+            <div class="accordion-header">
+                <span class="step-num">2</span>
+                <h3>ДЕЙСТВИЕ</h3>
+            </div>
+            <div class="accordion-content">
+                <input type="text" id="search-query" placeholder="Что ищем? (например: сельско-)">
+                
+                <div class="search-types">
+                    <label class="radio-container">
+                        <input type="radio" name="search-type" value="simple" checked>
+                        <span>Простой поиск</span>
+                    </label>
+                    <label class="radio-container">
+                        <input type="radio" name="search-type" value="ai">
+                        <span>AI Поиск (смысл)</span>
+                    </label>
+                </div>
+
+                <div class="filters">
+                    <input type="date" id="date-from">
+                    <input type="date" id="date-to">
+                </div>
+
+                <button class="btn-primary" id="search-btn">НАЙТИ</button>
+            </div>
+        </div>
+
+        <!-- Гармошка 3: РЕЗУЛЬТАТ -->
+        <div class="accordion" id="result-section">
+            <div class="accordion-header">
+                <span class="step-num">3</span>
+                <h3>РЕЗУЛЬТАТ</h3>
+                <span class="status-badge" id="result-count">0</span>
+            </div>
+            <div class="accordion-content">
+                <div id="results-container">
+                    <p class="placeholder">Здесь появятся результаты поиска...</p>
+                </div>
+                <div class="result-actions" style="display: none;">
+                    <button class="btn-small" id="export-md">Скачать .MD</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Подключаем JS-библиотеку Telegram -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
