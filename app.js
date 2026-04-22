@@ -39,35 +39,64 @@ function toggleAddForm() {
     btn.style.display = isHidden ? 'none' : 'block';
 }
 
-async function submitNewSource() {
-    const url = document.getElementById('new-group-url').value;
-    const freq = document.getElementById('update-freq').value;
-    const allTopics = document.getElementById('all-topics').checked;
+let currentPreview = null;
 
-    if (!url) return tg.showAlert("Введите ссылку на группу");
+async function previewSource() {
+    const url = document.getElementById('new-group-url').value;
+    if (!url) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/sources/preview`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initData: tg.initData, url: url })
+        });
+        currentPreview = await response.json();
+        
+        const topicsDiv = document.getElementById('topics-select');
+        topicsDiv.innerHTML = '';
+        if (currentPreview.is_forum && currentPreview.topics.length > 0) {
+            topicsDiv.innerHTML = '<p>Выберите разделы:</p>';
+            currentPreview.topics.forEach(t => {
+                topicsDiv.innerHTML += `
+                    <label><input type="checkbox" name="topic-id" value="${t.id}" checked> ${t.title}</label><br>
+                `;
+            });
+            topicsDiv.style.display = 'block';
+            document.getElementById('all-topics-row').style.display = 'none';
+        } else {
+            topicsDiv.style.display = 'none';
+            document.getElementById('all-topics-row').style.display = 'block';
+        }
+    } catch (e) {
+        tg.showAlert("Группа не найдена");
+    }
+}
+
+async function submitNewSource() {
+    if (!currentPreview) return;
+
+    const freq = document.getElementById('update-freq').value;
+    const selectedTopics = Array.from(document.querySelectorAll('input[name="topic-id"]:checked')).map(el => parseInt(el.value));
+    const allTopics = document.getElementById('all-topics').checked;
 
     tg.MainButton.showProgress();
     try {
-        const response = await fetch(`${API_BASE}/api/sources/add`, {
+        await fetch(`${API_BASE}/api/sources/add`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 initData: tg.initData,
-                url: url,
+                chat_id: currentPreview.chat_id,
+                title: currentPreview.title,
                 update_interval: freq,
-                all_topics: allTopics
+                topic_ids: (currentPreview.is_forum && !allTopics) ? selectedTopics : null
             })
         });
-        if (response.ok) {
-            toggleAddForm();
-            loadUserSources();
-            document.getElementById('new-group-url').value = '';
-        } else {
-            const err = await response.json();
-            tg.showAlert("Ошибка: " + err.detail);
-        }
+        toggleAddForm();
+        loadUserSources();
     } catch (e) {
-        tg.showAlert("Ошибка связи с сервером");
+        tg.showAlert("Ошибка при сохранении");
     }
     tg.MainButton.hideProgress();
 }
