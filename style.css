@@ -106,6 +106,34 @@ input[type="text"], input[type="date"] {
     color: var(--hint-color);
 }
 
+.message-card {
+    background: var(--bg-color);
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+.message-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--hint-color);
+    margin-bottom: 6px;
+}
+.m-user { font-weight: bold; color: var(--link-color); }
+.m-text { font-size: 14px; line-height: 1.4; word-wrap: break-word; }
+.hint { text-align: center; color: var(--hint-color); padding: 20px; font-size: 14px; }
+.btn-export {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
 /* Стили для карточек результатов */
 .message-card {
     border-bottom: 1px solid rgba(0,0,0,0.05);
