@@ -29,8 +29,14 @@
                 </div>
                 
                 <div id="add-source-form" style="display:none; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px;">
-                    <input type="text" id="new-group-url" placeholder="Ссылка на группу или юзернейм">
-                    <div class="form-row">
+                    <input type="text" id="new-group-url" placeholder="Ссылка или @username" onblur="previewSource()">
+                    
+                    <div id="topics-select" style="display:none; font-size: 12px; background: var(--secondary-bg); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                        <!-- Топики форума -->
+                    </div>
+
+                    <div class="form-row" id="all-topics-row">
+
                         <label>Обновление:</label>
                         <select id="update-freq">
                             <option value="daily">Раз в сутки</option>
