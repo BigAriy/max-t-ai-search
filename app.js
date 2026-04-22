@@ -1,5 +1,5 @@
 const tg = window.Telegram.WebApp;
-const API_BASE = "https://your-backend-api.com"; // Замени на свой URL
+const API_BASE = "https://search.sigmaboy.us";
 
 tg.ready();
 tg.expand();
@@ -111,44 +111,28 @@ async function loadUserSources() {
             const item = document.createElement('div');
             item.className = 'source-item';
             item.innerHTML = `
-                <input type="checkbox" class="source-check" value="${src.chat_id}">
-                <div class="source-info">
-                    <span class="source-title">${src.title}</span>
-                    <span class="source-meta">${src.update_interval}</span>
-                </div>
+                <label>
+                    <input type="checkbox" class="source-check" value="${src.chat_id}">
+                    <div class="source-info" style="display:inline-block; vertical-align: middle; margin-left: 10px;">
+                        <span class="source-title">${src.title}</span>
+                        <span class="source-meta" style="font-size: 10px; color: var(--hint-color); display: block;">${src.update_interval}</span>
+                    </div>
+                </label>
             `;
             list.appendChild(item);
         });
-        document.getElementById('count-sources').innerText = sources.length;
+        document.getElementById('source-status').innerText = "Всего: " + sources.length;
     } catch (e) {
         console.error("Ошибка загрузки источников:", e);
     }
 }
 
 
-// Заглушка списка групп
-const mockGroups = [
-    { id: 1, title: "Агро-Клуб 🚜" },
-    { id: 2, title: "Крипто-Чат 💰" },
-    { id: 3, title: "Заметки о тракторах" }
-];
-
-const groupsList = document.getElementById('groups-list');
-mockGroups.forEach(group => {
-    const div = document.createElement('div');
-    div.innerHTML = `
-        <label>
-            <input type="checkbox" value="${group.id}"> ${group.title}
-        </label>
-    `;
-    groupsList.appendChild(div);
-});
-
 // Кнопка поиска
 let lastResults = [];
 
 document.getElementById('search-btn').addEventListener('click', async () => {
-    const query = document.getElementById('search-input').value;
+    const query = document.getElementById('search-query').value;
     const dateFrom = document.getElementById('date-from').value;
     const dateTo = document.getElementById('date-to').value;
     const selectedChats = Array.from(document.querySelectorAll('.source-check:checked')).map(el => el.value);
@@ -164,8 +148,8 @@ document.getElementById('search-btn').addEventListener('click', async () => {
         renderResults(lastResults);
         
         // Авто-переключение гармошек
-        document.getElementById('acc-action').classList.remove('active');
-        document.getElementById('acc-results').classList.add('active');
+        document.getElementById('action-section').classList.remove('active');
+        document.getElementById('result-section').classList.add('active');
     } catch (e) {
         tg.showAlert("Ошибка при поиске");
     }
@@ -173,8 +157,8 @@ document.getElementById('search-btn').addEventListener('click', async () => {
 });
 
 function renderResults(messages) {
-    const container = document.getElementById('results-list');
-    document.getElementById('count-results').innerText = messages.length;
+    const container = document.getElementById('results-container');
+    document.getElementById('result-count').innerText = messages.length;
     container.innerHTML = '';
 
     if (messages.length === 0) {
