@@ -45,13 +45,19 @@ async function previewSource() {
     const url = document.getElementById('new-group-url').value;
     if (!url) return;
     
+    console.log("Attempting preview for:", url);
+    console.log("API_BASE is:", API_BASE);
+    
     try {
         const response = await fetch(`${API_BASE}/api/sources/preview`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ initData: tg.initData, url: url })
         });
+        
+        console.log("Response status:", response.status);
         currentPreview = await response.json();
+        console.log("Received preview data:", currentPreview);
         
         const topicsDiv = document.getElementById('topics-select');
         topicsDiv.innerHTML = '';
