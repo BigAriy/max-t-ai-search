@@ -1,85 +1,59 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Telegram Archive</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleSift AI Search</title>
+    <link rel="stylesheet" href="style.css?v=2.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <!-- Шапка с профилем -->
-    <header id="app-header">
-        <div class="user-info">
-            <span id="user-name">Загрузка...</span>
+    <div class="header-wrapper">
+        <div id="app-header">TeleSift AI</div>
+    </div>
+
+    <!-- ГАРМОШКА 1: ИСТОЧНИКИ -->
+    <div class="accordion active" id="acc-sources">
+        <div class="acc-header" onclick="toggleAcc('acc-sources')">
+            <span class="step">1</span> ИСТОЧНИКИ <span class="badge" id="count-sources">0</span>
         </div>
-        <button id="settings-btn">⚙️</button>
-    </header>
-
-    <main id="app-container">
-        <!-- Гармошка 1: ИСТОЧНИКИ -->
-        <div class="accordion active" id="source-section">
-            <div class="accordion-header">
-                <span class="step-num">1</span>
-                <h3>ИСТОЧНИКИ</h3>
-                <span class="status-badge" id="source-status">Выбрано: 0</span>
+        <div class="acc-body">
+            <div id="sources-list" class="list-container">
+                <!-- Группы загрузятся из API -->
+                <div class="loader"></div>
             </div>
-            <div class="accordion-content">
-                <div id="groups-list">
-                    <!-- Сюда JS добавит группы -->
-                </div>
-                <button class="btn-secondary" id="add-group-btn">+ Добавить группу</button>
-            </div>
+            <button class="btn-add" onclick="addNewSource()">+ Добавить группу</button>
         </div>
+    </div>
 
-        <!-- Гармошка 2: ДЕЙСТВИЕ -->
-        <div class="accordion" id="action-section">
-            <div class="accordion-header">
-                <span class="step-num">2</span>
-                <h3>ДЕЙСТВИЕ</h3>
-            </div>
-            <div class="accordion-content">
-                <input type="text" id="search-query" placeholder="Что ищем? (например: сельско-)">
-                
-                <div class="search-types">
-                    <label class="radio-container">
-                        <input type="radio" name="search-type" value="simple" checked>
-                        <span>Простой поиск</span>
-                    </label>
-                    <label class="radio-container">
-                        <input type="radio" name="search-type" value="ai">
-                        <span>AI Поиск (смысл)</span>
-                    </label>
-                </div>
-
-                <div class="filters">
-                    <input type="date" id="date-from">
-                    <input type="date" id="date-to">
-                </div>
-
-                <button class="btn-primary" id="search-btn">НАЙТИ</button>
-            </div>
+    <!-- ГАРМОШКА 2: ДЕЙСТВИЕ -->
+    <div class="accordion" id="acc-action">
+        <div class="acc-header" onclick="toggleAcc('acc-action')">
+            <span class="step">2</span> ДЕЙСТВИЕ
         </div>
-
-        <!-- Гармошка 3: РЕЗУЛЬТАТ -->
-        <div class="accordion" id="result-section">
-            <div class="accordion-header">
-                <span class="step-num">3</span>
-                <h3>РЕЗУЛЬТАТ</h3>
-                <span class="status-badge" id="result-count">0</span>
+        <div class="acc-body">
+            <input type="text" id="search-input" placeholder="Поиск (например: сельско-)">
+            <div class="filter-row">
+                <input type="date" id="date-from">
+                <input type="date" id="date-to">
             </div>
-            <div class="accordion-content">
-                <div id="results-container">
-                    <p class="placeholder">Здесь появятся результаты поиска...</p>
-                </div>
-                <div class="result-actions" style="display: none;">
-                    <button class="btn-small" id="export-md">Скачать .MD</button>
-                </div>
-            </div>
+            <button class="main-button" onclick="runSearch()">НАЙТИ</button>
         </div>
-    </main>
+    </div>
 
-    <!-- Подключаем JS-библиотеку Telegram -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="app.js"></script>
+    <!-- ГАРМОШКА 3: РЕЗУЛЬТАТ -->
+    <div class="accordion" id="acc-results">
+        <div class="acc-header" onclick="toggleAcc('acc-results')">
+            <span class="step">3</span> РЕЗУЛЬТАТ <span class="badge" id="count-results">0</span>
+        </div>
+        <div class="acc-body">
+            <div id="results-list">
+                <p class="hint">Настройте поиск и нажмите кнопку найти</p>
+            </div>
+            <button id="export-btn" class="btn-export" style="display:none" onclick="exportResults()">Скачать .MD</button>
+        </div>
+    </div>
+
+    <script src="app.js?v=2.0"></script>
 </body>
 </html>
