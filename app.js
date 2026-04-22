@@ -145,32 +145,72 @@ mockGroups.forEach(group => {
 });
 
 // Кнопка поиска
-document.getElementById('search-btn').addEventListener('click', () => {
-    // 1. Показываем визуально, что ищем
-    document.getElementById('search-btn').innerText = "ИЩУ...";
-    
-    // 2. Имитируем запрос к бэкенду
-    setTimeout(() => {
-        const resultsContainer = document.getElementById('results-container');
-        resultsContainer.innerHTML = ""; // Очищаем
+let lastResults = [];
 
-        // Генерируем тестовый результат
-        for(let i=0; i<3; i++) {
-            const card = document.createElement('div');
-            card.className = "message-card";
-            card.innerHTML = `
-                <div class="message-date">2024-05-20 14:30</div>
-                <b>Петрович:</b>
-                <p>Мы решили брать тот самый <i>сельскохозяйственный</i> плуг.</p>
-            `;
-            resultsContainer.appendChild(card);
-        }
+document.getElementById('search-btn').addEventListener('click', async () => {
+    const query = document.getElementById('search-input').value;
+    const dateFrom = document.getElementById('date-from').value;
+    const dateTo = document.getElementById('date-to').value;
+    const selectedChats = Array.from(document.querySelectorAll('.source-check:checked')).map(el => el.value);
 
-        // Переключаем гармошку на результат
-        document.getElementById('action-section').classList.remove('active');
-        document.getElementById('result-section').classList.add('active');
-        document.getElementById('search-btn').innerText = "НАЙТИ";
-        document.getElementById('result-count').innerText = "3";
-        document.querySelector('.result-actions').style.display = "block";
-    }, 1000);
+    if (selectedChats.length === 0) return tg.showAlert("Выберите хотя бы один источник в шаге 1");
+
+    document.getElementById('search-btn').innerText = "ПОИСК...";
+    try {
+        const url = `${API_BASE}/api/messages/search?initData=${encodeURIComponent(tg.initData)}&query=${encodeURIComponent(query)}&chat_ids=${selectedChats.join(',')}&d_from=${dateFrom}&d_to=${dateTo}`;
+        const response = await fetch(url);
+        lastResults = await response.json();
+        
+        renderResults(lastResults);
+        
+        // Авто-переключение гармошек
+        document.getElementById('acc-action').classList.remove('active');
+        document.getElementById('acc-results').classList.add('active');
+    } catch (e) {
+        tg.showAlert("Ошибка при поиске");
+    }
+    document.getElementById('search-btn').innerText = "НАЙТИ";
 });
+
+function renderResults(messages) {
+    const container = document.getElementById('results-list');
+    document.getElementById('count-results').innerText = messages.length;
+    container.innerHTML = '';
+
+    if (messages.length === 0) {
+        container.innerHTML = '<p class="hint">Ничего не найдено</p>';
+        document.getElementById('export-btn').style.display = 'none';
+        return;
+    }
+
+    messages.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'message-card';
+        card.innerHTML = `
+            <div class="message-meta">
+                <span class="m-date">${m.date}</span>
+                <span class="m-user">User ID: ${m.sender}</span>
+            </div>
+            <div class="m-text">${m.text.replace(/\n/g, '<br>')}</div>
+        `;
+        container.appendChild(card);
+    });
+    document.getElementById('export-btn').style.display = 'block';
+}
+
+function exportResults() {
+    if (lastResults.length === 0) return;
+
+    let md = `# Отчет о поиске\nЭкспортировано: ${new Date().toLocaleString()}\n\n---\n\n`;
+    lastResults.forEach(m => {
+        md += `**[${m.date}] User ${m.sender}:**\n> ${m.text.replace(/\n/g, '\n> ')}\n\n---\n\n`;
+    });
+
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `search_export_${Date.now()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
