@@ -109,6 +109,7 @@ async function submitNewSource() {
     if (!currentPreview) return;
 
     const freq = document.getElementById('update-freq').value;
+    const depth = document.getElementById('history-depth').value;
     const selectedTopics = Array.from(document.querySelectorAll('input[name="topic-id"]:checked')).map(el => parseInt(el.value));
     const allTopics = document.getElementById('all-topics').checked;
 
@@ -123,6 +124,7 @@ async function submitNewSource() {
                 title: currentPreview.title,
                 username: currentPreview.username,
                 update_interval: freq,
+				history_depth_days: parseInt(depth),
                 topic_ids: (currentPreview.is_forum && !allTopics) ? selectedTopics : null
             })
         });
