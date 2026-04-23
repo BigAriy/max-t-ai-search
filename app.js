@@ -113,6 +113,9 @@ async function submitNewSource() {
     const selectedTopics = Array.from(document.querySelectorAll('input[name="topic-id"]:checked')).map(el => parseInt(el.value));
     const allTopics = document.getElementById('all-topics').checked;
 
+    // Если это не форум, топики всегда null
+    const finalTopicIds = currentPreview.is_forum && !allTopics ? selectedTopics : null;
+
     tg.MainButton.showProgress();
     try {
         const response = await fetch(`${API_BASE}/api/sources/add`, {
@@ -124,14 +127,23 @@ async function submitNewSource() {
                 title: currentPreview.title,
                 username: currentPreview.username,
                 update_interval: freq,
-				history_depth_days: parseInt(depth),
-                topic_ids: (currentPreview.is_forum && !allTopics) ? selectedTopics : null
+                history_depth_days: parseInt(depth),
+                topic_ids: finalTopicIds
             })
         });
-        toggleAddForm();
-        loadUserSources();
+        
+        if (response.ok) {
+            tg.showAlert("Группа успешно добавлена в список мониторинга!");
+            toggleAddForm();
+            loadUserSources();
+            document.getElementById('new-group-url').value = '';
+            currentPreview = null;
+        } else {
+            const err = await response.json();
+            tg.showAlert("Ошибка сервера: " + (err.detail || "неизвестно"));
+        }
     } catch (e) {
-        tg.showAlert("Ошибка при сохранении");
+        tg.showAlert("Ошибка связи с сервером при сохранении");
     }
     tg.MainButton.hideProgress();
 }
@@ -142,21 +154,27 @@ async function loadUserSources() {
         const sources = await response.json();
         const list = document.getElementById('groups-list');
         list.innerHTML = '';
+        
         sources.forEach(src => {
             const item = document.createElement('div');
             item.className = 'source-item';
+            item.style.padding = "8px 0";
+            item.style.borderBottom = "1px solid rgba(0,0,0,0.03)";
             item.innerHTML = `
-                <label>
-                    <input type="checkbox" class="source-check" value="${src.chat_id}">
-                    <div class="source-info" style="display:inline-block; vertical-align: middle; margin-left: 10px;">
-                        <span class="source-title">${src.title}</span>
-                        <span class="source-meta" style="font-size: 10px; color: var(--hint-color); display: block;">${src.update_interval}</span>
+                <label style="display: flex; align-items: center; width: 100%;">
+                    <input type="checkbox" class="source-check" value="${src.chat_id}" onchange="updateToolButtons()">
+                    <div class="source-info" style="margin-left: 10px; flex-grow: 1;">
+                        <span class="source-title" style="font-size: 14px; font-weight: 500;">${src.title}</span>
+                        <div style="font-size: 10px; color: var(--hint-color);">
+                            Обновление: ${src.update_interval} | Дата: ${src.last_sync}
+                        </div>
                     </div>
                 </label>
             `;
             list.appendChild(item);
         });
         document.getElementById('source-status').innerText = "Всего: " + sources.length;
+        updateToolButtons();
     } catch (e) {
         console.error("Ошибка загрузки источников:", e);
     }
@@ -232,4 +250,48 @@ function exportResults() {
     a.download = `search_export_${Date.now()}.md`;
     a.click();
     URL.revokeObjectURL(url);
+}
+
+function updateToolButtons() {
+    const selected = Array.from(document.querySelectorAll('.source-check:checked'));
+    const delBtn = document.getElementById('delete-group-btn');
+    const syncBtn = document.getElementById('sync-group-btn');
+    const hint = document.getElementById('selection-hint');
+    
+    const show = selected.length > 0;
+    delBtn.style.display = show ? 'block' : 'none';
+    syncBtn.style.display = show ? 'block' : 'none';
+    hint.innerText = show ? `Выбрано: ${selected.length}` : '';
+}
+
+async function deleteSelected() {
+    const selected = Array.from(document.querySelectorAll('.source-check:checked')).map(el => el.value);
+    if (!confirm(`Удалить выбранные источники (${selected.length}) из вашего аккаунта?`)) return;
+
+    try {
+        await fetch(`${API_BASE}/api/sources?initData=${encodeURIComponent(tg.initData)}&ids=${selected.join(',')}`, {
+            method: 'DELETE'
+        });
+        loadUserSources();
+    } catch (e) {
+        tg.showAlert("Ошибка при удалении");
+    }
+}
+
+async function syncSelected() {
+    const selected = Array.from(document.querySelectorAll('.source-check:checked')).map(el => el.value);
+    tg.showConfirm(`Запустить немедленное обновление для ${selected.length} источников?`, async (ok) => {
+        if (ok) {
+            try {
+                await fetch(`${API_BASE}/api/sources/sync`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ initData: tg.initData, ids: selected })
+                });
+                tg.showAlert("Запрос на обновление принят. Это может занять несколько минут.");
+            } catch (e) {
+                tg.showAlert("Ошибка при запросе обновления");
+            }
+        }
+    });
 }
