@@ -1,6 +1,16 @@
 const tg = window.Telegram.WebApp;
 const API_BASE = "https://search.sigmaboy.us";
 
+const i18n = {
+    "daily": "Ежедневно",
+    "hourly": "Ежечасно",
+    "realtime": "В реальном времени",
+    "never": "Никогда",
+    "total_msgs": "сообщ.",
+    "topics_all": "Все разделы",
+    "topics_sel": "Разделов: "
+};
+
 tg.ready();
 tg.expand();
 
@@ -156,23 +166,34 @@ async function loadUserSources() {
         list.innerHTML = '';
         
         sources.forEach(src => {
-            const avatar = src.avatar_url ? `${API_BASE}${src.avatar_url}` : 'https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png';
+            const avatar = src.avatar_url ? `${API_BASE}${src.avatar_url}?v=${Date.now()}` : 'https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png';
             const item = document.createElement('div');
             item.className = 'source-item';
             item.style = "display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05);";
             
+            const intervalLabel = i18n[src.update_interval] || src.update_interval;
+            const topicsLabel = src.topics_count > 0 ? `${i18n.topics_sel}${src.topics_count}` : i18n.topics_all;
+
             item.innerHTML = `
                 <input type="checkbox" class="source-check" value="${src.chat_id}" onchange="updateToolButtons()" style="margin-right: 10px;">
-                <img src="${avatar}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 12px;">
-                <div class="source-info" style="flex-grow: 1;">
-                    <div style="font-weight: 500; font-size: 14px;">${src.title}</div>
+                <div style="position: relative; margin-right: 12px;">
+                    <img src="${avatar}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: block; background: #eee;">
+                    <span style="position: absolute; bottom: -2px; right: -2px; background: var(--primary-color); color: white; font-size: 8px; padding: 2px 4px; border-radius: 4px; border: 2px solid var(--bg-color);">
+                        ${src.msg_count}
+                    </span>
+                </div>
+                <div class="source-info" style="flex-grow: 1; min-width: 0;">
+                    <div style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${src.title}</div>
                     <div style="font-size: 10px; color: var(--hint-color);">
-                        ${src.update_interval} | Дата: ${src.last_sync}
+                        ${intervalLabel} • ${topicsLabel}
+                    </div>
+                    <div style="font-size: 9px; color: var(--hint-color); opacity: 0.8;">
+                        Обновлено: ${src.last_sync}
                     </div>
                 </div>
-                <div class="source-actions" style="display: flex; gap: 8px;">
-                    <button onclick="tg.openLink('https://t.me/${src.username}')" style="background:none; border:none; padding:5px; opacity:0.6;">🔗</button>
-                    <button onclick="tg.showAlert('${src.description.replace(/'/g, "\\'")}')" style="background:none; border:none; padding:5px; opacity:0.6;">❓</button>
+                <div class="source-actions" style="display: flex; gap: 4px;">
+                    <button onclick="tg.openLink('https://t.me/${src.username || 'c/'+src.chat_id}')" style="background:none; border:none; padding:8px; font-size: 16px;">🔗</button>
+                    <button onclick="showSourceInfo('${src.title}', '${src.description.replace(/'/g, "\\'")}')" style="background:none; border:none; padding:8px; font-size: 16px;">❓</button>
                 </div>
             `;
             list.appendChild(item);
@@ -298,4 +319,8 @@ async function syncSelected() {
             }
         }
     });
+}
+
+function showSourceInfo(title, desc) {
+    tg.showAlert(`📖 ${title}\n\n${desc}`);
 }
