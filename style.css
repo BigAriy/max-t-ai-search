@@ -142,3 +142,20 @@ input[type="text"], input[type="date"] {
 
 .message-card b { color: var(--link-color); }
 .message-date { font-size: 10px; color: var(--hint-color); }
+
+.btn-tool {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    background: var(--primary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.btn-tool:active { transform: scale(0.95); }
