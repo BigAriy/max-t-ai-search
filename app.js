@@ -4,24 +4,50 @@ const API_BASE = "https://search.sigmaboy.us";
 tg.ready();
 tg.expand();
 
-// Инициализация профиля пользователя при входе
+let currentPreview = null;
+let userProfile = null;
+
 async function initUserProfile() {
     const initData = tg.initData;
+    console.log("Starting init request to:", `${API_BASE}/api/user/init`);
+    
     try {
         const response = await fetch(`${API_BASE}/api/user/init`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ initData })
         });
-        const user = await response.json();
-        document.getElementById('user-name').innerText = user.full_name || "Пользователь";
+        
+        if (!response.ok) throw new Error("Auth failed");
+        
+        userProfile = await response.json();
+        document.getElementById('user-name').innerText = userProfile.full_name;
+        console.log("Profile loaded:", userProfile);
         loadUserSources();
     } catch (e) {
-        console.error("Ошибка инициализации:", e);
+        console.error("Critical init error:", e);
+        document.getElementById('user-name').innerText = "Ошибка входа";
     }
 }
 
+// Показ данных профиля (Личный кабинет)
+document.getElementById('settings-btn').addEventListener('click', () => {
+    if (!userProfile) return tg.showAlert("Данные профиля еще не загружены");
+    
+    const info = `
+👤 Профиль: ${userProfile.full_name}
+🆔 ID: ${userProfile.id}
+🌍 Язык: ${userProfile.lang}
+📅 Регистрация: ${userProfile.created_at}
+    `;
+    tg.showAlert(info);
+});
+
 initUserProfile();
+
+
+
+
 
 // Логика работы гармошек
 document.querySelectorAll('.accordion-header').forEach(header => {
@@ -39,7 +65,7 @@ function toggleAddForm() {
     btn.style.display = isHidden ? 'none' : 'block';
 }
 
-let currentPreview = null;
+
 
 async function previewSource() {
     const url = document.getElementById('new-group-url').value;
@@ -88,13 +114,14 @@ async function submitNewSource() {
 
     tg.MainButton.showProgress();
     try {
-        await fetch(`${API_BASE}/api/sources/add`, {
+        const response = await fetch(`${API_BASE}/api/sources/add`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 initData: tg.initData,
                 chat_id: currentPreview.chat_id,
                 title: currentPreview.title,
+                username: currentPreview.username,
                 update_interval: freq,
                 topic_ids: (currentPreview.is_forum && !allTopics) ? selectedTopics : null
             })
