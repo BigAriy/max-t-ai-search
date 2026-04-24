@@ -16,6 +16,7 @@ tg.expand();
 
 let currentPreview = null;
 let userProfile = null;
+let sourcesCache = {}; // Глобальный кэш для хранения описаний
 
 async function initUserProfile() {
     const initData = tg.initData;
@@ -178,6 +179,8 @@ async function loadUserSources() {
         list.innerHTML = '';
         
         sources.forEach(src => {
+            sourcesCache[src.chat_id] = src; // Сохраняем объект в кэш
+            
             const avatar = src.avatar_url ? `${API_BASE}${src.avatar_url}?v=${Date.now()}` : 'https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png';
             const item = document.createElement('div');
             item.className = 'source-item';
@@ -205,7 +208,7 @@ async function loadUserSources() {
                 </div>
                 <div class="source-actions" style="display: flex; gap: 4px;">
                     <button onclick="tg.openLink('https://t.me/${src.username || 'c/'+src.chat_id}')" style="background:none; border:none; padding:8px; font-size: 16px;">🔗</button>
-                    <button onclick="showSourceInfo('${src.title}', '${src.description.replace(/'/g, "\\'")}')" style="background:none; border:none; padding:8px; font-size: 16px;">❓</button>
+                    <button onclick="showSourceInfo('${src.chat_id}')" style="background:none; border:none; padding:8px; font-size: 16px;">❓</button>
                 </div>
             `;
             list.appendChild(item);
@@ -333,6 +336,8 @@ async function syncSelected() {
     });
 }
 
-function showSourceInfo(title, desc) {
-    tg.showAlert(`📖 ${title}\n\n${desc}`);
+function showSourceInfo(chatId) {
+    const src = sourcesCache[chatId];
+    if (!src) return;
+    tg.showAlert(`📖 ${src.title}\n\n${src.description || 'Описание отсутствует'}`);
 }
