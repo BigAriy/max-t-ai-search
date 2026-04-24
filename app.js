@@ -175,13 +175,25 @@ async function loadUserSources() {
     list.innerHTML = '<div class="loading-overlay"><span class="spinner-inline" style="border-top-color:var(--primary-color)"></span> Загрузка списка...</div>';
     
     try {
-        const response = await fetch(`${API_BASE}/api/sources/list?initData=${encodeURIComponent(tg.initData)}&t=${Date.now()}`);
-        if (!response.ok) throw new Error("API error");
-        const sources = await response.json();
+        console.log("--- FETCHING SOURCES ---");
+        const url = `${API_BASE}/api/sources/list?initData=${encodeURIComponent(tg.initData)}&t=${Date.now()}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const sources = await response.json(); // ПОЛУЧАЕМ ДАННЫЕ
+        console.log("Sources received from server:", sources);
+        
         list.innerHTML = '';
         
+        if (!Array.isArray(sources) || sources.length === 0) {
+            list.innerHTML = '<div class="loading-overlay">Источников пока нет</div>';
+            document.getElementById('source-status').innerText = "Выбрано: 0";
+            return;
+        }
+
         sources.forEach(src => {
-            sourcesCache[src.chat_id] = src; // Сохраняем объект в кэш
+            sourcesCache[src.chat_id] = src;
             
             const avatar = src.avatar_url ? `${API_BASE}${src.avatar_url}?v=${Date.now()}` : 'https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png';
             const item = document.createElement('div');
@@ -218,7 +230,8 @@ async function loadUserSources() {
         document.getElementById('source-status').innerText = "Всего: " + sources.length;
         updateToolButtons();
     } catch (e) {
-        console.error("Ошибка загрузки источников:", e);
+        console.error("Critical error loading sources:", e);
+        list.innerHTML = '<div class="loading-overlay" style="color:red">Ошибка загрузки данных</div>';
     }
 }
 
