@@ -175,7 +175,9 @@ async function loadUserSources() {
     list.innerHTML = '<div class="loading-overlay"><span class="spinner-inline" style="border-top-color:var(--primary-color)"></span> Загрузка списка...</div>';
     
     try {
-		const response = await fetch(`${API_BASE}/api/sources/list?initData=${encodeURIComponent(tg.initData)}&t=${Date.now()}`);
+        const response = await fetch(`${API_BASE}/api/sources/list?initData=${encodeURIComponent(tg.initData)}&t=${Date.now()}`);
+        if (!response.ok) throw new Error("API error");
+        const sources = await response.json();
         list.innerHTML = '';
         
         sources.forEach(src => {
