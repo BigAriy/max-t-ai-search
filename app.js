@@ -78,11 +78,15 @@ function toggleAddForm() {
 
 
 async function previewSource() {
-    const url = document.getElementById('new-group-url').value;
+    const urlInput = document.getElementById('new-group-url');
+    const saveBtn = document.querySelector('#add-source-form .btn-primary');
+    const url = urlInput.value.trim();
     if (!url) return;
     
-    console.log("Attempting preview for:", url);
-    console.log("API_BASE is:", API_BASE);
+    // Блокируем ввод и кнопку
+    urlInput.disabled = true;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-inline"></span> ПРОВЕРКА...';
     
     try {
         const response = await fetch(`${API_BASE}/api/sources/preview`, {
@@ -91,17 +95,16 @@ async function previewSource() {
             body: JSON.stringify({ initData: tg.initData, url: url })
         });
         
-        console.log("Response status:", response.status);
+        if (!response.ok) throw new Error("Not found");
         currentPreview = await response.json();
-        console.log("Received preview data:", currentPreview);
         
         const topicsDiv = document.getElementById('topics-select');
         topicsDiv.innerHTML = '';
         if (currentPreview.is_forum && currentPreview.topics.length > 0) {
-            topicsDiv.innerHTML = '<p>Выберите разделы:</p>';
+            topicsDiv.innerHTML = '<p style="margin-bottom:8px">Выберите разделы:</p>';
             currentPreview.topics.forEach(t => {
                 topicsDiv.innerHTML += `
-                    <label><input type="checkbox" name="topic-id" value="${t.id}" checked> ${t.title}</label><br>
+                    <label style="display:block; margin-bottom:5px;"><input type="checkbox" name="topic-id" value="${t.id}" checked> ${t.title}</label>
                 `;
             });
             topicsDiv.style.display = 'block';
@@ -110,22 +113,30 @@ async function previewSource() {
             topicsDiv.style.display = 'none';
             document.getElementById('all-topics-row').style.display = 'block';
         }
+        saveBtn.disabled = false;
     } catch (e) {
-        tg.showAlert("Группа не найдена");
+        tg.showAlert("Группа не найдена или доступ запрещен. Проверьте ссылку.");
+        currentPreview = null;
+    } finally {
+        urlInput.disabled = false;
+        saveBtn.innerText = 'СОХРАНИТЬ';
     }
 }
 
-async function submitNewSource() {
-    if (!currentPreview) return;
 
+async function submitNewSource() {
+    if (!currentPreview) return tg.showAlert("Сначала дождитесь проверки группы");
+
+    const saveBtn = document.querySelector('#add-source-form .btn-primary');
     const freq = document.getElementById('update-freq').value;
     const depth = document.getElementById('history-depth').value;
     const selectedTopics = Array.from(document.querySelectorAll('input[name="topic-id"]:checked')).map(el => parseInt(el.value));
     const allTopics = document.getElementById('all-topics').checked;
 
-    // Если это не форум, топики всегда null
     const finalTopicIds = currentPreview.is_forum && !allTopics ? selectedTopics : null;
 
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-inline"></span> СОХРАНЕНИЕ...';
     tg.MainButton.showProgress();
     try {
         const response = await fetch(`${API_BASE}/api/sources/add`, {
@@ -159,10 +170,11 @@ async function submitNewSource() {
 }
 
 async function loadUserSources() {
+    const list = document.getElementById('groups-list');
+    list.innerHTML = '<div class="loading-overlay"><span class="spinner-inline" style="border-top-color:var(--primary-color)"></span> Загрузка списка...</div>';
+    
     try {
         const response = await fetch(`${API_BASE}/api/sources/list?initData=${encodeURIComponent(tg.initData)}`);
-        const sources = await response.json();
-        const list = document.getElementById('groups-list');
         list.innerHTML = '';
         
         sources.forEach(src => {
