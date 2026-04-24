@@ -159,3 +159,32 @@ input[type="text"], input[type="date"] {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .btn-tool:active { transform: scale(0.95); }
+
+.spinner-inline {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
+}
+
+.loading-overlay {
+    text-align: center;
+    padding: 20px;
+    color: var(--hint-color);
+    font-size: 14px;
+}
