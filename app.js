@@ -23,7 +23,7 @@ async function initUserProfile() {
     console.log("Starting init request to:", `${API_BASE}/api/user/init`);
     
     try {
-        const response = await fetch(`${API_BASE}/api/user/init`, {
+        const response = await fetch(`${API_BASE}/api/user/init?t=${Date.now()}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ initData })
@@ -175,7 +175,7 @@ async function loadUserSources() {
     list.innerHTML = '<div class="loading-overlay"><span class="spinner-inline" style="border-top-color:var(--primary-color)"></span> Загрузка списка...</div>';
     
     try {
-        const response = await fetch(`${API_BASE}/api/sources/list?initData=${encodeURIComponent(tg.initData)}`);
+		const response = await fetch(`${API_BASE}/api/sources/list?initData=${encodeURIComponent(tg.initData)}&t=${Date.now()}`);
         list.innerHTML = '';
         
         sources.forEach(src => {
