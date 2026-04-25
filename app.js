@@ -180,15 +180,12 @@ async function loadUserSources() {
     list.innerHTML = '<div class="loading-overlay"><span class="spinner-inline" style="border-top-color:var(--primary-color)"></span> Загрузка списка...</div>';
     
     try {
-        console.log("--- FETCHING SOURCES ---");
         const url = `${API_BASE}/api/sources/list?initData=${encodeURIComponent(tg.initData)}&t=${Date.now()}`;
         const response = await fetch(url);
         
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) throw new Error(`Server returned ${response.status}`);
         
-        const sources = await response.json(); // ПОЛУЧАЕМ ДАННЫЕ
-        console.log("Sources received from server:", sources);
-        
+        const sources = await response.json();
         list.innerHTML = '';
         
         if (!Array.isArray(sources) || sources.length === 0) {
@@ -203,9 +200,13 @@ async function loadUserSources() {
             const avatar = src.avatar_url ? `${API_BASE}${src.avatar_url}?v=${Date.now()}` : 'https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png';
             const item = document.createElement('div');
             item.className = 'source-item';
-            item.setAttribute('data-id', src.chat_id);
-            item.style = "display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.3s;";
+            item.setAttribute('data-id', String(src.chat_id));
+            // Используем cssText для надежности
+            item.style.cssText = "display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.3s;";
             
+            const intervalLabel = i18n[src.update_interval] || src.update_interval;
+            const topicsLabel = src.topics_count > 0 ? `${i18n.topics_sel}${src.topics_count}` : i18n.topics_all;
+
             item.innerHTML = `
                 <input type="checkbox" class="source-check" value="${src.chat_id}" onchange="updateToolButtons()" style="margin-right: 10px;">
                 <div style="position: relative; margin-right: 12px;">
@@ -215,7 +216,7 @@ async function loadUserSources() {
                     </span>
                 </div>
                 <div class="source-info" style="flex-grow: 1; min-width: 0;">
-                    <div style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${src.title}</div>
+                    <div style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${src.title || 'Без названия'}</div>
                     <div style="font-size: 10px; color: var(--hint-color);">
                         ${intervalLabel} • ${topicsLabel} <span class="sync-status-text" style="color:var(--primary-color); font-weight:bold;"></span>
                     </div>
@@ -233,8 +234,8 @@ async function loadUserSources() {
         document.getElementById('source-status').innerText = "Всего: " + sources.length;
         updateToolButtons();
     } catch (e) {
-        console.error("Critical error loading sources:", e);
-        list.innerHTML = '<div class="loading-overlay" style="color:red">Ошибка загрузки данных</div>';
+        console.error("Critical error in loadUserSources:", e);
+        list.innerHTML = `<div class="loading-overlay" style="color:red">Ошибка: ${e.message}</div>`;
     }
 }
 
@@ -363,6 +364,7 @@ function showSourceInfo(chatId) {
 
 function setupWebSocketHandlers() {
     WebSocketClient.on('sync_start', (data) => {
+        // Используем CSS.escape или кавычки для работы с отрицательными ID
         const item = document.querySelector(`.source-item[data-id="${data.chat_id}"]`);
         if (item) {
             item.classList.add('is-syncing');
