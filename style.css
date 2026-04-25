@@ -188,3 +188,30 @@ input[type="text"], input[type="date"] {
     color: var(--hint-color);
     font-size: 14px;
 }
+
+/* Стили для состояния синхронизации */
+@keyframes pulse-bg {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(51, 144, 236, 0.05); }
+    100% { background-color: transparent; }
+}
+
+@keyframes spin-avatar {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.source-item.is-syncing {
+    animation: pulse-bg 2s infinite ease-in-out;
+}
+
+.source-item.is-syncing .source-avatar {
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.source-item.is-syncing .sync-status-text::after {
+    content: '...';
+    display: inline-block;
+    width: 12px;
+    text-align: left;
+}
