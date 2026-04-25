@@ -228,26 +228,10 @@ async function loadUserSources() {
                     </span>
                 </div>
                 <div class="source-info" style="flex-grow: 1; min-width: 0;">
-                    <div style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${src.title}</div>
+                    <div style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${src.title || 'Без названия'}</div>
                     <div style="font-size: 10px; color: var(--hint-color); display: flex; align-items: center; gap: 5px;">
                         <span>${intervalLabel} • ${topicsLabel}</span>
                         <span class="status-label">${statusLabels[src.status] || src.status}</span>
-                    </div>
-                    <div class="sync-date" style="font-size: 9px; color: var(--hint-color); opacity: 0.8;">
-                        Обновлено: ${src.last_sync}
-                    </div>
-                </div>
-
-                <div style="position: relative; margin-right: 12px;">
-                    <img src="${avatar}" class="source-avatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: block; background: #eee;">
-                    <span class="msg-badge" style="position: absolute; bottom: -2px; right: -2px; background: var(--primary-color); color: white; font-size: 8px; padding: 2px 4px; border-radius: 4px; border: 2px solid var(--bg-color);">
-                        ${src.msg_count}
-                    </span>
-                </div>
-                <div class="source-info" style="flex-grow: 1; min-width: 0;">
-                    <div style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${src.title || 'Без названия'}</div>
-                    <div style="font-size: 10px; color: var(--hint-color);">
-                        ${intervalLabel} • ${topicsLabel} <span class="sync-status-text" style="color:var(--primary-color); font-weight:bold;"></span>
                     </div>
                     <div class="sync-date" style="font-size: 9px; color: var(--hint-color); opacity: 0.8;">
                         Обновлено: ${src.last_sync}
