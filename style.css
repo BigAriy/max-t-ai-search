@@ -205,13 +205,19 @@ input[type="text"], input[type="date"] {
     animation: pulse-bg 2s infinite ease-in-out;
 }
 
-.source-item.is-syncing .source-avatar {
-    box-shadow: 0 0 0 2px var(--primary-color);
+/* Приглушение недоступных источников */
+.source-item.is-restricted {
+    opacity: 0.5;
+    filter: grayscale(0.8);
 }
 
-.source-item.is-syncing .sync-status-text::after {
-    content: '...';
-    display: inline-block;
-    width: 12px;
-    text-align: left;
+.source-item.is-restricted .source-info div:first-child {
+    text-decoration: line-through;
 }
+
+/* Цвета для статусов */
+.status-ready .sync-status-text { color: #31b545; }
+.status-syncing .sync-status-text { color: var(--primary-color); }
+.status-error .sync-status-text { color: #e64646; font-weight: bold; }
+.status-disabled .sync-status-text { color: #888; }
+.status-pending .sync-status-text { color: #f39c12; }
