@@ -218,28 +218,30 @@ async function loadUserSources() {
             const topicsLabel = src.topics_count > 0 ? `${i18n.topics_sel}${src.topics_count}` : i18n.topics_all;
 
             item.innerHTML = `
-                <input type="checkbox" class="source-check" value="${src.chat_id}" 
-                       onchange="updateToolButtons()" style="margin-right: 10px;" 
-                       ${!canSearch ? 'disabled' : ''}>
-                <div style="position: relative; margin-right: 12px;">
-                    <img src="${avatar}" class="source-avatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: block; background: #eee;">
-                    <span class="msg-badge" style="position: absolute; bottom: -2px; right: -2px; background: var(--primary-color); color: white; font-size: 8px; padding: 2px 4px; border-radius: 4px; border: 2px solid var(--bg-color);">
-                        ${src.msg_count}
-                    </span>
+                <!-- Лево: Селектор и Аватар -->
+                <div class="source-left" style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                    <input type="checkbox" class="source-check" value="${src.chat_id}" 
+                           onchange="updateToolButtons()" ${!canSearch ? 'disabled' : ''}>
+                    <img src="${avatar}" class="source-avatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: #eee;">
                 </div>
-                <div class="source-info" style="flex-grow: 1; min-width: 0;">
-                    <div style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${src.title || 'Без названия'}</div>
-                    <div style="font-size: 10px; color: var(--hint-color); display: flex; align-items: center; gap: 5px;">
-                        <span>${intervalLabel} • ${topicsLabel}</span>
+
+                <!-- Центр: Основная информация (растягивается) -->
+                <div class="source-info" style="flex-grow: 1; min-width: 0; padding: 0 12px;">
+                    <div style="font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color);">${src.title || 'Без названия'}</div>
+                    <div style="font-size: 11px; color: var(--hint-color); display: flex; align-items: center; gap: 6px; margin: 2px 0;">
+                        <span style="white-space: nowrap;">${intervalLabel} • ${topicsLabel}</span>
                         <span class="status-label">${statusLabels[src.status] || src.status}</span>
                     </div>
-                    <div class="sync-date" style="font-size: 9px; color: var(--hint-color); opacity: 0.8;">
-                        Обновлено: ${src.last_sync}
-                    </div>
+                    <div class="sync-date" style="font-size: 10px; color: var(--hint-color); opacity: 0.7;">Обновлено: ${src.last_sync}</div>
                 </div>
-                <div class="source-actions" style="display: flex; gap: 4px;">
-                    <button onclick="tg.openLink('https://t.me/${src.username || 'c/'+src.chat_id}')" style="background:none; border:none; padding:8px; font-size: 16px;">🔗</button>
-                    <button onclick="showSourceInfo('${src.chat_id}')" style="background:none; border:none; padding:8px; font-size: 16px;">❓</button>
+
+                <!-- Право: Статистика и Действия (вертикальный стек) -->
+                <div class="source-right-stack" style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; flex-shrink: 0; min-height: 50px;">
+                    <span class="msg-badge" style="background: var(--primary-color); color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold;">
+                        ${src.msg_count}
+                    </span>
+                    <button onclick="tg.openLink('https://t.me/${src.username || 'c/'+src.chat_id}')" style="background:none; border:none; padding:4px; font-size: 14px; cursor:pointer;">🔗</button>
+                    <button onclick="showSourceInfo('${src.chat_id}')" style="background:none; border:none; padding:4px; font-size: 14px; cursor:pointer;">❓</button>
                 </div>
             `;
             list.appendChild(item);
