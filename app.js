@@ -1,10 +1,6 @@
 const tg = window.Telegram.WebApp;
 const API_BASE = "https://search.sigmaboy.us";
 
-// Сообщаем Telegram, что мы готовы
-tg.ready();
-tg.expand();
-
 const i18n = {
     "daily": "Ежедневно",
     "hourly": "Ежечасно",
@@ -15,31 +11,24 @@ const i18n = {
     "topics_sel": "Разделов: "
 };
 
+tg.ready();
+tg.expand();
+
 let currentPreview = null;
 let userProfile = null;
-let sourcesCache = {}; 
+let sourcesCache = {}; // Глобальный кэш для хранения описаний
+// Глобальная переменная для ID пользователя (резервный вход)
+let globalUserId = new URLSearchParams(window.location.search).get('user_id');
 
 async function initUserProfile() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const userIdFromUrl = urlParams.get('user_id');
+    const initData = tg.initData;
+    console.log("Starting init request to:", `${API_BASE}/api/user/init`);
     
-    console.log("Init. initData length:", tg.initData ? tg.initData.length : 0, "UserID from URL:", userIdFromUrl);
-    
-    // Если нет ни данных телеграма, ни ID в ссылке - тогда ошибка
-    if (!tg.initData && !userIdFromUrl) {
-        document.getElementById('user-name').innerText = "Ошибка входа";
-        tg.showAlert("Используйте кнопку в боте для входа.");
-        return;
-    }
-
     try {
         const response = await fetch(`${API_BASE}/api/user/init?t=${Date.now()}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                initData: tg.initData || "", 
-                direct_user_id: userIdFromUrl 
-            })
+            body: JSON.stringify({ initData })
         });
         
         if (!response.ok) throw new Error("Auth failed");
@@ -111,7 +100,11 @@ async function previewSource() {
         const response = await fetch(`${API_BASE}/api/sources/preview`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ initData: tg.initData, url: url })
+            body: JSON.stringify({ 
+                initData: tg.initData || "", 
+                user_id: globalUserId,
+                url: url 
+            })
         });
         
         if (!response.ok) throw new Error("Not found");
@@ -162,7 +155,8 @@ async function submitNewSource() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                initData: tg.initData,
+                initData: tg.initData || "",
+                user_id: globalUserId,
                 chat_id: currentPreview.chat_id,
                 title: currentPreview.title,
                 username: currentPreview.username,
@@ -193,7 +187,7 @@ async function loadUserSources() {
     list.innerHTML = '<div class="loading-overlay"><span class="spinner-inline" style="border-top-color:var(--primary-color)"></span> Загрузка списка...</div>';
     
     try {
-        const url = `${API_BASE}/api/sources/list?initData=${encodeURIComponent(tg.initData)}&t=${Date.now()}`;
+        const url = `${API_BASE}/api/sources/list?initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&t=${Date.now()}`;
         const response = await fetch(url);
         
         if (!response.ok) throw new Error(`Server returned ${response.status}`);
@@ -293,7 +287,7 @@ document.getElementById('search-btn').addEventListener('click', async () => {
 
     document.getElementById('search-btn').innerText = "ПОИСК...";
     try {
-        let url = `${API_BASE}/api/messages/search?initData=${encodeURIComponent(tg.initData)}&query=${encodeURIComponent(query)}&d_from=${dateFrom}&d_to=${dateTo}`;
+        let url = `${API_BASE}/api/messages/search?initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&query=${encodeURIComponent(query)}&d_from=${dateFrom}&d_to=${dateTo}`;
         
         if (selectedChats.length > 0) url += `&chat_ids=${selectedChats.join(',')}`;
         if (selectedTopics.length > 0) url += `&topic_ids=${selectedTopics.join(',')}`;
@@ -451,7 +445,7 @@ async function toggleTopics(chatId) {
     container.style.display = 'block';
 
     try {
-        const response = await fetch(`${API_BASE}/api/sources/topics?chat_id=${chatId}&initData=${encodeURIComponent(tg.initData)}`);
+        const response = await fetch(`${API_BASE}/api/sources/topics?chat_id=${chatId}&initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}`);
         const topics = await response.json();
         
         if (topics.length === 0) {
