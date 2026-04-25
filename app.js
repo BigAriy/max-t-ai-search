@@ -34,6 +34,11 @@ async function initUserProfile() {
         userProfile = await response.json();
         document.getElementById('user-name').innerText = userProfile.full_name;
         console.log("Profile loaded:", userProfile);
+        
+        // Запускаем WebSocket соединение
+        WebSocketClient.connect(userProfile.id, API_BASE);
+        setupWebSocketHandlers();
+
         loadUserSources();
     } catch (e) {
         console.error("Critical init error:", e);
@@ -198,25 +203,23 @@ async function loadUserSources() {
             const avatar = src.avatar_url ? `${API_BASE}${src.avatar_url}?v=${Date.now()}` : 'https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png';
             const item = document.createElement('div');
             item.className = 'source-item';
-            item.style = "display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05);";
+            item.setAttribute('data-id', src.chat_id);
+            item.style = "display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.3s;";
             
-            const intervalLabel = i18n[src.update_interval] || src.update_interval;
-            const topicsLabel = src.topics_count > 0 ? `${i18n.topics_sel}${src.topics_count}` : i18n.topics_all;
-
             item.innerHTML = `
                 <input type="checkbox" class="source-check" value="${src.chat_id}" onchange="updateToolButtons()" style="margin-right: 10px;">
                 <div style="position: relative; margin-right: 12px;">
-                    <img src="${avatar}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: block; background: #eee;">
-                    <span style="position: absolute; bottom: -2px; right: -2px; background: var(--primary-color); color: white; font-size: 8px; padding: 2px 4px; border-radius: 4px; border: 2px solid var(--bg-color);">
+                    <img src="${avatar}" class="source-avatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: block; background: #eee;">
+                    <span class="msg-badge" style="position: absolute; bottom: -2px; right: -2px; background: var(--primary-color); color: white; font-size: 8px; padding: 2px 4px; border-radius: 4px; border: 2px solid var(--bg-color);">
                         ${src.msg_count}
                     </span>
                 </div>
                 <div class="source-info" style="flex-grow: 1; min-width: 0;">
                     <div style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${src.title}</div>
                     <div style="font-size: 10px; color: var(--hint-color);">
-                        ${intervalLabel} • ${topicsLabel}
+                        ${intervalLabel} • ${topicsLabel} <span class="sync-status-text" style="color:var(--primary-color); font-weight:bold;"></span>
                     </div>
-                    <div style="font-size: 9px; color: var(--hint-color); opacity: 0.8;">
+                    <div class="sync-date" style="font-size: 9px; color: var(--hint-color); opacity: 0.8;">
                         Обновлено: ${src.last_sync}
                     </div>
                 </div>
@@ -356,3 +359,30 @@ function showSourceInfo(chatId) {
     if (!src) return;
     tg.showAlert(`📖 ${src.title}\n\n${src.description || 'Описание отсутствует'}`);
 }
+
+
+function setupWebSocketHandlers() {
+    WebSocketClient.on('sync_start', (data) => {
+        const item = document.querySelector(`.source-item[data-id="${data.chat_id}"]`);
+        if (item) {
+            item.classList.add('is-syncing');
+            const statusLabel = item.querySelector('.sync-status-text');
+            if (statusLabel) statusLabel.innerText = "Обновление...";
+        }
+    });
+
+    WebSocketClient.on('sync_end', (data) => {
+        const item = document.querySelector(`.source-item[data-id="${data.chat_id}"]`);
+        if (item) {
+            item.classList.remove('is-syncing');
+            // Обновляем счетчик сообщений
+            const badge = item.querySelector('.msg-badge');
+            if (badge) badge.innerText = data.msg_count;
+            // Обновляем дату
+            const dateLabel = item.querySelector('.sync-date');
+            if (dateLabel) dateLabel.innerText = `Обновлено: ${data.last_sync}`;
+        }
+    });
+}
+
+
