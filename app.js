@@ -215,33 +215,43 @@ async function loadUserSources() {
             item.style.cssText = "display: flex; flex-direction: row; align-items: center; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); background: var(--bg-color); width: 100%; box-sizing: border-box;";
 
             item.innerHTML = `
-                <!-- 1. ЛЕВО: Селектор и Аватар -->
-                <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-                    <input type="checkbox" class="source-check" value="${src.chat_id}" 
-                           onchange="updateToolButtons()" ${!canSearch ? 'disabled' : ''}>
-                    <img src="${avatar}" class="source-avatar" style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover;">
-                </div>
-
-                <!-- 2. ЦЕНТР: Инфо (занимает всё свободное место) -->
-                <div class="source-info" style="flex: 1; min-width: 0; padding: 0 10px; display: flex; flex-direction: column; justify-content: center;">
-                    <div style="font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${src.title || 'Без названия'}</div>
-                    <div style="display: flex; align-items: center; gap: 5px; margin: 2px 0;">
-                        <span style="font-size: 10px; color: var(--hint-color); white-space: nowrap;">${intervalLabel} • ${topicsLabel}</span>
-                        <span class="status-label">${statusLabels[src.status] || src.status}</span>
+                <div class="source-row" style="display: flex; align-items: center; width: 100%;">
+                    <!-- 1. ЛЕВО -->
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <input type="checkbox" class="source-check" value="${src.chat_id}" 
+                               onchange="updateToolButtons()" ${!canSearch ? 'disabled' : ''} 
+                               style="width: 18px; height: 18px; margin: 0;">
+                        <img src="${avatar}" class="source-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                     </div>
-                    <div class="sync-date" style="font-size: 9px; color: var(--hint-color); opacity: 0.7;">Обновлено: ${src.last_sync}</div>
-                </div>
 
-                <!-- 3. ПРАВО: Стек (badge + кнопки) -->
-                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; min-width: 40px;">
-                    <span class="msg-badge" style="background: var(--primary-color); color: white; font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: bold;">
-                        ${src.msg_count}
-                    </span>
-                    <div style="display: flex; gap: 2px;">
-                        <button onclick="tg.openLink('https://t.me/${src.username || 'c/'+src.chat_id}')" style="background:none; border:none; padding:4px; font-size: 14px;">🔗</button>
-                        <button onclick="showSourceInfo('${src.chat_id}')" style="background:none; border:none; padding:4px; font-size: 14px;">❓</button>
+                    <!-- 2. ЦЕНТР -->
+                    <div class="source-info" style="flex: 1; min-width: 0; padding: 0 10px; display: flex; flex-direction: column;">
+                        <div style="font-weight: 600; font-size: 14px; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${src.title || 'Без названия'}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; margin: 2px 0;">
+                            <span class="status-label">${statusLabels[src.status] || src.status}</span>
+                            <button onclick="toggleTopics('${src.chat_id}')" class="btn-topics-toggle" 
+                                    style="font-size: 10px; background: none; border: 1px solid var(--primary-color); color: var(--primary-color); border-radius: 4px; padding: 0 4px; cursor: pointer;">
+                                Разделы ▼
+                            </button>
+                        </div>
+                        <div class="sync-date" style="font-size: 9px; color: var(--hint-color); opacity: 0.7;">${src.last_sync}</div>
+                    </div>
+
+                    <!-- 3. ПРАВО -->
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; flex-shrink: 0; min-width: 45px; height: 42px;">
+                        <span class="msg-badge" style="background: var(--primary-color); color: white; font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: bold;">
+                            ${src.msg_count}
+                        </span>
+                        <div style="display: flex; gap: 0;">
+                            <button onclick="tg.openLink('https://t.me/${src.username || 'c/'+src.chat_id}')" style="background:none; border:none; padding:4px; font-size: 14px;">🔗</button>
+                            <button onclick="showSourceInfo('${src.chat_id}')" style="background:none; border:none; padding:4px; font-size: 14px;">❓</button>
+                        </div>
                     </div>
                 </div>
+                <!-- Контейнер для подгрупп -->
+                <div id="topics-${src.chat_id}" class="topics-container" style="display: none; width: 100%; padding: 5px 0 5px 45px; background: rgba(0,0,0,0.02);"></div>
             `;
             list.appendChild(item);
         });
@@ -262,12 +272,19 @@ document.getElementById('search-btn').addEventListener('click', async () => {
     const dateFrom = document.getElementById('date-from').value;
     const dateTo = document.getElementById('date-to').value;
     const selectedChats = Array.from(document.querySelectorAll('.source-check:checked')).map(el => el.value);
+    const selectedTopics = Array.from(document.querySelectorAll('.topic-check:checked')).map(el => el.value);
 
-    if (selectedChats.length === 0) return tg.showAlert("Выберите хотя бы один источник в шаге 1");
+    if (selectedChats.length === 0 && selectedTopics.length === 0) {
+        return tg.showAlert("Выберите источники или разделы для поиска");
+    }
 
     document.getElementById('search-btn').innerText = "ПОИСК...";
     try {
-        const url = `${API_BASE}/api/messages/search?initData=${encodeURIComponent(tg.initData)}&query=${encodeURIComponent(query)}&chat_ids=${selectedChats.join(',')}&d_from=${dateFrom}&d_to=${dateTo}`;
+        let url = `${API_BASE}/api/messages/search?initData=${encodeURIComponent(tg.initData)}&query=${encodeURIComponent(query)}&d_from=${dateFrom}&d_to=${dateTo}`;
+        
+        if (selectedChats.length > 0) url += `&chat_ids=${selectedChats.join(',')}`;
+        if (selectedTopics.length > 0) url += `&topic_ids=${selectedTopics.join(',')}`;
+
         const response = await fetch(url);
         lastResults = await response.json();
         
@@ -410,3 +427,32 @@ function setupWebSocketHandlers() {
     });
 }
 
+async function toggleTopics(chatId) {
+    const container = document.getElementById(`topics-${chatId}`);
+    if (container.style.display === 'block') {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.innerHTML = '<div style="font-size:10px; color:var(--hint-color)">Загрузка разделов...</div>';
+    container.style.display = 'block';
+
+    try {
+        const response = await fetch(`${API_BASE}/api/sources/topics?chat_id=${chatId}&initData=${encodeURIComponent(tg.initData)}`);
+        const topics = await response.json();
+        
+        if (topics.length === 0) {
+            container.innerHTML = '<div style="font-size:10px; color:var(--hint-color)">В этой группе нет разделов</div>';
+            return;
+        }
+
+        container.innerHTML = topics.map(t => `
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; cursor: pointer;">
+                <input type="checkbox" class="topic-check" data-chat-id="${chatId}" value="${t.id}" style="width: 14px; height: 14px; margin: 0;">
+                <span style="font-size: 12px; color: var(--text-color);">${t.title}</span>
+            </label>
+        `).join('');
+    } catch (e) {
+        container.innerHTML = '<div style="font-size:10px; color:red">Ошибка загрузки</div>';
+    }
+}
