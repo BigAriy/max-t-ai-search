@@ -198,17 +198,23 @@ async function loadUserSources() {
             sourcesCache[src.chat_id] = src;
             
             const avatar = src.avatar_url ? `${API_BASE}${src.avatar_url}?v=${Date.now()}` : 'https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png';
+            const canSearch = ['ready', 'syncing', 'paused'].includes(src.status);
+            const statusNames = {
+                'pending': 'Ожидание', 'ready': 'Готов', 'syncing': 'Обновление',
+                'paused': 'На паузе', 'disabled': 'Отключен', 'error': 'Ошибка'
+            };
+
             const item = document.createElement('div');
-            item.className = 'source-item';
+            item.className = `source-item status-${src.status} ${!canSearch ? 'is-disabled' : ''}`;
             item.setAttribute('data-id', String(src.chat_id));
-            // Используем cssText для надежности
-            item.style.cssText = "display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.3s;";
+            item.style.cssText = `display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); transition: all 0.3s; ${!canSearch ? 'opacity: 0.6;' : ''}`;
             
             const intervalLabel = i18n[src.update_interval] || src.update_interval;
             const topicsLabel = src.topics_count > 0 ? `${i18n.topics_sel}${src.topics_count}` : i18n.topics_all;
 
             item.innerHTML = `
-                <input type="checkbox" class="source-check" value="${src.chat_id}" onchange="updateToolButtons()" style="margin-right: 10px;">
+                <input type="checkbox" class="source-check" value="${src.chat_id}" onchange="updateToolButtons()" style="margin-right: 10px;" ${!canSearch ? 'disabled' : ''}>
+
                 <div style="position: relative; margin-right: 12px;">
                     <img src="${avatar}" class="source-avatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: block; background: #eee;">
                     <span class="msg-badge" style="position: absolute; bottom: -2px; right: -2px; background: var(--primary-color); color: white; font-size: 8px; padding: 2px 4px; border-radius: 4px; border: 2px solid var(--bg-color);">
@@ -363,28 +369,31 @@ function showSourceInfo(chatId) {
 
 
 function setupWebSocketHandlers() {
-    WebSocketClient.on('sync_start', (data) => {
-        // Используем CSS.escape или кавычки для работы с отрицательными ID
+    WebSocketClient.on('status_update', (data) => {
         const item = document.querySelector(`.source-item[data-id="${data.chat_id}"]`);
-        if (item) {
-            item.classList.add('is-syncing');
-            const statusLabel = item.querySelector('.sync-status-text');
-            if (statusLabel) statusLabel.innerText = "Обновление...";
-        }
-    });
+        if (!item) return;
 
-    WebSocketClient.on('sync_end', (data) => {
-        const item = document.querySelector(`.source-item[data-id="${data.chat_id}"]`);
-        if (item) {
+        // Обновляем визуальный статус
+        item.className = `source-item status-${data.status} ${!['ready', 'syncing', 'paused'].includes(data.status) ? 'is-disabled' : ''}`;
+        
+        const checkbox = item.querySelector('.source-check');
+        if (checkbox) checkbox.disabled = !['ready', 'syncing', 'paused'].includes(data.status);
+
+        if (data.status === 'syncing') {
+            item.classList.add('is-syncing');
+        } else {
             item.classList.remove('is-syncing');
-            // Обновляем счетчик сообщений
+        }
+
+        if (data.msg_count !== undefined) {
             const badge = item.querySelector('.msg-badge');
             if (badge) badge.innerText = data.msg_count;
-            // Обновляем дату
+        }
+
+        if (data.last_sync) {
             const dateLabel = item.querySelector('.sync-date');
             if (dateLabel) dateLabel.innerText = `Обновлено: ${data.last_sync}`;
         }
     });
 }
-
 
