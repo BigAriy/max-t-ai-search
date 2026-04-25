@@ -202,21 +202,26 @@ input[type="text"], input[type="date"] {
 }
 
 .source-item {
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-    background: var(--bg-color);
+    width: 100%;
 }
 
-.source-item.is-syncing {
-    animation: pulse-bg 2s infinite ease-in-out;
+.source-avatar {
+    flex-shrink: 0;
+}
+
+.source-info {
+    flex-grow: 1;
+    min-width: 0; /* Важно для обрезки длинного текста */
 }
 
 /* Приглушение недоступных источников */
 .source-item.is-restricted {
-    filter: grayscale(1);
-    opacity: 0.6;
+    filter: grayscale(0.8);
+    opacity: 0.5;
 }
 
 .status-label {
