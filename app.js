@@ -28,7 +28,10 @@ async function initUserProfile() {
         const response = await fetch(`${API_BASE}/api/user/init?t=${Date.now()}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ initData })
+            body: JSON.stringify({ 
+                initData: initData || "", 
+                direct_user_id: globalUserId 
+            })
         });
         
         if (!response.ok) throw new Error("Auth failed");
