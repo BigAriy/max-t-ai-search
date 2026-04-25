@@ -208,40 +208,39 @@ async function loadUserSources() {
             };
 
             const item = document.createElement('div');
-            item.className = `source-item status-${src.status}`;
+            item.className = `source-item status-${src.status} ${!canSearch ? 'is-restricted' : ''}`;
             item.setAttribute('data-id', String(src.chat_id));
             
-            if (!canSearch) item.classList.add('is-restricted');
-            if (src.status === 'syncing') item.classList.add('is-syncing');
-
-            const intervalLabel = i18n[src.update_interval] || src.update_interval;
-            const topicsLabel = src.topics_count > 0 ? `${i18n.topics_sel}${src.topics_count}` : i18n.topics_all;
+            // ВАЖНО: Принудительный стиль строки
+            item.style.cssText = "display: flex; flex-direction: row; align-items: center; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); background: var(--bg-color); width: 100%; box-sizing: border-box;";
 
             item.innerHTML = `
-                <!-- Лево: Селектор и Аватар -->
-                <div class="source-left" style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                <!-- 1. ЛЕВО: Селектор и Аватар -->
+                <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
                     <input type="checkbox" class="source-check" value="${src.chat_id}" 
                            onchange="updateToolButtons()" ${!canSearch ? 'disabled' : ''}>
-                    <img src="${avatar}" class="source-avatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: #eee;">
+                    <img src="${avatar}" class="source-avatar" style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover;">
                 </div>
 
-                <!-- Центр: Основная информация (растягивается) -->
-                <div class="source-info" style="flex-grow: 1; min-width: 0; padding: 0 12px;">
-                    <div style="font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color);">${src.title || 'Без названия'}</div>
-                    <div style="font-size: 11px; color: var(--hint-color); display: flex; align-items: center; gap: 6px; margin: 2px 0;">
-                        <span style="white-space: nowrap;">${intervalLabel} • ${topicsLabel}</span>
+                <!-- 2. ЦЕНТР: Инфо (занимает всё свободное место) -->
+                <div class="source-info" style="flex: 1; min-width: 0; padding: 0 10px; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${src.title || 'Без названия'}</div>
+                    <div style="display: flex; align-items: center; gap: 5px; margin: 2px 0;">
+                        <span style="font-size: 10px; color: var(--hint-color); white-space: nowrap;">${intervalLabel} • ${topicsLabel}</span>
                         <span class="status-label">${statusLabels[src.status] || src.status}</span>
                     </div>
-                    <div class="sync-date" style="font-size: 10px; color: var(--hint-color); opacity: 0.7;">Обновлено: ${src.last_sync}</div>
+                    <div class="sync-date" style="font-size: 9px; color: var(--hint-color); opacity: 0.7;">Обновлено: ${src.last_sync}</div>
                 </div>
 
-                <!-- Право: Статистика и Действия (вертикальный стек) -->
-                <div class="source-right-stack" style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; flex-shrink: 0; min-height: 50px;">
-                    <span class="msg-badge" style="background: var(--primary-color); color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold;">
+                <!-- 3. ПРАВО: Стек (badge + кнопки) -->
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; min-width: 40px;">
+                    <span class="msg-badge" style="background: var(--primary-color); color: white; font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: bold;">
                         ${src.msg_count}
                     </span>
-                    <button onclick="tg.openLink('https://t.me/${src.username || 'c/'+src.chat_id}')" style="background:none; border:none; padding:4px; font-size: 14px; cursor:pointer;">🔗</button>
-                    <button onclick="showSourceInfo('${src.chat_id}')" style="background:none; border:none; padding:4px; font-size: 14px; cursor:pointer;">❓</button>
+                    <div style="display: flex; gap: 2px;">
+                        <button onclick="tg.openLink('https://t.me/${src.username || 'c/'+src.chat_id}')" style="background:none; border:none; padding:4px; font-size: 14px;">🔗</button>
+                        <button onclick="showSourceInfo('${src.chat_id}')" style="background:none; border:none; padding:4px; font-size: 14px;">❓</button>
+                    </div>
                 </div>
             `;
             list.appendChild(item);
