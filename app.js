@@ -20,20 +20,26 @@ let userProfile = null;
 let sourcesCache = {}; 
 
 async function initUserProfile() {
-    // Если initData пустое, пробуем подождать 200мс (защита от медленного старта)
-    if (!tg.initData) {
-        console.log("⏳ initData is empty, retrying in 200ms...");
-        setTimeout(initUserProfile, 200);
+    const urlParams = new URLSearchParams(window.location.search);
+    const userIdFromUrl = urlParams.get('user_id');
+    
+    console.log("Init. initData length:", tg.initData ? tg.initData.length : 0, "UserID from URL:", userIdFromUrl);
+    
+    // Если нет ни данных телеграма, ни ID в ссылке - тогда ошибка
+    if (!tg.initData && !userIdFromUrl) {
+        document.getElementById('user-name').innerText = "Ошибка входа";
+        tg.showAlert("Используйте кнопку в боте для входа.");
         return;
     }
 
-    console.log("Starting init request, length:", tg.initData.length);
-    
     try {
         const response = await fetch(`${API_BASE}/api/user/init?t=${Date.now()}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ initData: tg.initData })
+            body: JSON.stringify({ 
+                initData: tg.initData || "", 
+                direct_user_id: userIdFromUrl 
+            })
         });
         
         if (!response.ok) throw new Error("Auth failed");
