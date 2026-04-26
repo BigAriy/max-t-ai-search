@@ -92,14 +92,24 @@ async function previewSource() {
     const urlInput = document.getElementById('new-group-url');
     const saveBtn = document.querySelector('#add-source-form .btn-primary');
     const statusDiv = document.getElementById('preview-status');
-    const url = urlInput.value.trim();
+    let url = urlInput.value.trim();
     
     // Скрываем старый статус при новом вводе
     statusDiv.style.display = 'none';
     if (!url) return;
 
-    // Валидация формата (RegExp для @username или ссылок t.me)
-    const tgRegex = /^(@[a-zA-Z0-9_]{4,32}|(https?:\/\/)?(t\.me|telegram\.me|telegram\.dog)\/[a-zA-Z0-9_+]{4,})($|\?)/;
+    // 1. Проверка на критическую длину
+    if (url.length > 200) {
+        statusDiv.innerText = "Ошибка: слишком длинный адрес (макс. 200 символов)";
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'rgba(230, 70, 70, 0.1)';
+        statusDiv.style.color = '#e64646';
+        saveBtn.disabled = true;
+        return;
+    }
+
+    // 2. Валидация формата (улучшенный Regex: разрешает слэши и ID в конце)
+    const tgRegex = /^(@[a-zA-Z0-9_]{4,32}|(https?:\/\/)?(t\.me|telegram\.me|telegram\.dog)\/[a-zA-Z0-9_+]{4,}(\/.*)?)$/;
     if (!tgRegex.test(url)) {
         statusDiv.innerText = "Неверный формат. Используйте @username или ссылку t.me/...";
         statusDiv.style.display = 'block';
@@ -108,6 +118,19 @@ async function previewSource() {
         saveBtn.disabled = true;
         return;
     }
+	
+	// 3. Нормализация URL (отрезаем хвосты типа /8002, оставляя только адрес группы)
+    if (url.includes('t.me/') || url.includes('telegram.me/')) {
+        const parts = url.split('/');
+        // Ссылка вида https://t.me/group/1234 или t.me/group/1234
+        // Имя группы всегда идет сразу после домена
+        const domainIndex = parts.findIndex(p => p.includes('t.me') || p.includes('telegram.me'));
+        if (domainIndex !== -1 && parts[domainIndex + 1]) {
+            const proto = url.startsWith('http') ? parts[0] + '//' : 'https://';
+            url = proto + parts[domainIndex] + '/' + parts[domainIndex + 1];
+            console.log("🔗 URL Normalized to:", url);
+        }
+		
     if (!url) return;
     
     // Блокируем ввод и кнопку
