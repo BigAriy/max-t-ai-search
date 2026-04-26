@@ -112,6 +112,14 @@ async function previewSource() {
         
         if (!response.ok) throw new Error("Not found");
         currentPreview = await response.json();
+		
+		const statusDiv = document.getElementById('preview-status');
+        statusDiv.innerHTML = currentPreview.status_text;
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = currentPreview.is_allowed ? 'rgba(49, 181, 69, 0.1)' : 'rgba(230, 70, 70, 0.1)';
+        statusDiv.style.color = currentPreview.is_allowed ? 'var(--text-color)' : '#e64646';
+        
+        saveBtn.disabled = !currentPreview.is_allowed;
         
         const topicsDiv = document.getElementById('topics-select');
         topicsDiv.innerHTML = '';
@@ -165,6 +173,7 @@ async function submitNewSource() {
                 username: currentPreview.username,
                 update_interval: freq,
                 history_depth_days: parseInt(depth),
+				type: currentPreview.type,
                 topic_ids: finalTopicIds
             })
         });
