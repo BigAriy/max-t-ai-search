@@ -91,7 +91,23 @@ function toggleAddForm() {
 async function previewSource() {
     const urlInput = document.getElementById('new-group-url');
     const saveBtn = document.querySelector('#add-source-form .btn-primary');
+    const statusDiv = document.getElementById('preview-status');
     const url = urlInput.value.trim();
+    
+    // Скрываем старый статус при новом вводе
+    statusDiv.style.display = 'none';
+    if (!url) return;
+
+    // Валидация формата (RegExp для @username или ссылок t.me)
+    const tgRegex = /^(@[a-zA-Z0-9_]{4,32}|(https?:\/\/)?(t\.me|telegram\.me|telegram\.dog)\/[a-zA-Z0-9_+]{4,})($|\?)/;
+    if (!tgRegex.test(url)) {
+        statusDiv.innerText = "Неверный формат. Используйте @username или ссылку t.me/...";
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'rgba(230, 70, 70, 0.1)';
+        statusDiv.style.color = '#e64646';
+        saveBtn.disabled = true;
+        return;
+    }
     if (!url) return;
     
     // Блокируем ввод и кнопку
