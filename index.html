@@ -33,6 +33,8 @@
                 
                 <div id="add-source-form" style="display:none; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px;">
                     <input type="text" id="new-group-url" placeholder="Ссылка или @username" onblur="previewSource()">
+					
+					<div id="preview-status" style="display:none; font-size: 13px; padding: 10px; border-radius: 8px; margin: 10px 0; border: 1px solid rgba(0,0,0,0.05); line-height: 1.4;"></div>
                     
                     <div id="topics-select" style="display:none; font-size: 12px; background: var(--secondary-bg); padding: 10px; border-radius: 8px; margin: 10px 0;">
                         <!-- Топики форума -->
@@ -130,6 +132,6 @@
     <!-- Подключаем JS-библиотеку Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 	<script src="ws_client.js?v=108"></script>
-    <script src="app.js?v=113"></script>
+    <script src="app.js?v=114"></script>
 </body>
 </html>
