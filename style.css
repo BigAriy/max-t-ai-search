@@ -248,3 +248,52 @@ input[type="text"], input[type="date"] {
 @keyframes blink {
     50% { opacity: 0.5; }
 }
+
+.filter-item {
+    background: var(--bg-color);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filter-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.filter-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.filter-meta {
+    font-size: 10px;
+    color: var(--hint-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.form-row label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.form-row select {
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: var(--bg-color);
+    color: var(--text-color);
+}
