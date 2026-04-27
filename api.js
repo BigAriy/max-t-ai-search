@@ -317,3 +317,37 @@ async function toggleTopics(chatId) {
         container.innerHTML = '<div style="font-size:10px; color:red">Ошибка загрузки</div>';
     }
 }
+
+async function startExport(format) {
+    const dateFrom = document.getElementById('date-from').value;
+    const dateTo = document.getElementById('date-to').value;
+    const selectedChats = Array.from(document.querySelectorAll('.source-check:checked')).map(el => el.value);
+    const selectedTopics = Array.from(document.querySelectorAll('.topic-check:checked')).map(el => el.value);
+
+    if (selectedChats.length === 0) return tg.showAlert("Выберите хотя бы один источник");
+
+    tg.MainButton.setText("ФОРМИРОВАНИЕ ФАЙЛА...");
+    tg.MainButton.show();
+    tg.MainButton.showProgress();
+
+    try {
+        let url = `${API_BASE}/api/messages/export?format=${format}&initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&chat_ids=${selectedChats.join(',')}`;
+        if (selectedTopics.length > 0) url += `&topic_ids=${selectedTopics.join(',')}`;
+        if (dateFrom) url += `&d_from=${dateFrom}`;
+        if (dateTo) url += `&d_to=${dateTo}`;
+
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        if (result.download_url) {
+            showDownloadLink(result.download_url);
+            toggleExportMenu();
+        } else {
+            tg.showAlert("Ошибка при создании файла");
+        }
+    } catch (e) {
+        tg.showAlert("Ошибка связи с сервером");
+    } finally {
+        tg.MainButton.hide();
+    }
+}
