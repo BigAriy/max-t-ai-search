@@ -132,8 +132,72 @@
                 <span class="step-num">3</span>
                 <h3>ИНСТРУМЕНТЫ</h3>
             </div>
-			            </div>
+		</div>
 			
+
+        <div class="accordion-content">
+                <!-- 1. Период дат -->
+                <div class="tool-dates" style="margin-bottom: 15px;">
+                    <div class="date-row">
+                        <input type="date" id="date-from">
+                        <button class="btn-small" onclick="setBeginningDate()">С начала</button>
+                    </div>
+                    <div class="date-row">
+                        <input type="date" id="date-to">
+                        <button class="btn-small" onclick="setTodayDate()">Сегодня</button>
+                    </div>
+                </div>
+
+                <!-- 2. Выбор режима -->
+                <div class="mode-switcher">
+                    <button class="mode-btn active" id="btn-mode-search" onclick="switchToolMode('search')">ПОИСК</button>
+                    <button class="mode-btn" id="btn-mode-chat" onclick="switchToolMode('chat')">ИИ-ЧАТ</button>
+                    <button class="mode-btn" id="btn-mode-analysis" onclick="switchToolMode('analysis')">АНАЛИЗ</button>
+                </div>
+
+                <!-- 3. Динамические настройки -->
+                <div id="tool-settings-container" style="margin-top: 15px;">
+                    <!-- Блок: ПОИСК -->
+                    <div id="pane-search" class="tool-pane">
+                        <div class="form-row-simple">
+                            <label>Объект:</label>
+                            <div class="segmented-control">
+                                <label><input type="radio" name="s-obj" value="msg" checked><span>Сообщения</span></label>
+                                <label><input type="radio" name="s-obj" value="user"><span>Люди</span></label>
+                            </div>
+                        </div>
+                        <div class="form-row-simple">
+                            <label>Движок:</label>
+                            <div class="segmented-control">
+                                <label><input type="radio" name="s-eng" value="simple" checked><span>Простой</span></label>
+                                <label><input type="radio" name="s-eng" value="ai"><span>ИИ (Смысл)</span></label>
+                            </div>
+                        </div>
+                        <input type="text" id="search-query" placeholder="Что ищем?">
+                    </div>
+
+                    <!-- Блок: ИИ-ЧАТ -->
+                    <div id="pane-chat" class="tool-pane" style="display:none">
+                        <p style="font-size: 11px; color: var(--hint-color); margin-bottom: 8px;">Задайте вопрос по архиву выбранных групп:</p>
+                        <textarea id="ai-chat-prompt" placeholder="Например: О чем спорили вчера в чате автолюбителей?" style="width:100%; height:80px; border-radius:8px; padding:10px; border:1px solid rgba(0,0,0,0.1); background:var(--secondary-bg); color:var(--text-color); font-family:inherit;"></textarea>
+                    </div>
+
+                    <!-- Блок: АНАЛИЗ -->
+                    <div id="pane-analysis" class="tool-pane" style="display:none">
+                        <div class="form-row-simple">
+                            <label>Инструмент:</label>
+                            <select id="analysis-tool" style="width: 100%; padding: 8px; border-radius: 8px;">
+                                <option value="graph">Социальный граф</option>
+                                <option value="experts">Топ экспертов</option>
+                                <option value="activity">График активности</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="main-action-btn" style="margin-top: 15px;" onclick="runMainTool()">НАЙТИ</button>
+			</div>
+
 			
 			
 			<!-- Гармошка 4: РЕЗУЛЬТАТ -->
@@ -158,9 +222,9 @@
     <!-- Подключаем JS-библиотеку Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="ws_client.js?v=115"></script>
-    <script src="global.js?v=122"></script>
-    <script src="api.js?v=122"></script>
-    <script src="ui.js?v=122"></script>
-    <script src="app.js?v=122"></script>
+    <script src="global.js?v=123"></script>
+    <script src="api.js?v=123"></script>
+    <script src="ui.js?v=123"></script>
+    <script src="app.js?v=123"></script>
 </body>
 </html>
