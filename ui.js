@@ -120,9 +120,17 @@ function showDownloadLink(url) {
 
 
 function toggleFilterForm() {
+    editingFilterId = null; // Сбрасываем режим редактирования
     const form = document.getElementById('add-filter-form');
     const btn = document.getElementById('add-filter-btn');
     const isHidden = form.style.display === 'none';
+    
+    // Сброс полей при открытии пустой формы
+    if (isHidden) {
+        document.getElementById('filter-trigger').value = '';
+        document.querySelector('#add-filter-form .btn-primary').innerText = 'СОХРАНИТЬ ФИЛЬТР';
+    }
+
     form.style.display = isHidden ? 'block' : 'none';
     btn.style.display = isHidden ? 'none' : 'block';
 }
@@ -141,9 +149,46 @@ function renderFilters() {
                 <span class="filter-meta">${f.type === 'ai' ? '🤖 AI' : '📝 Ключи'} | ${f.object === 'messages' ? 'Сообщения' : 'Люди'}</span>
             </div>
             <div class="filter-actions" style="display: flex; gap: 8px;">
-                <button class="btn-tool" style="width:30px; height:30px; font-size:12px; background:${f.active ? '#31b545' : '#ccc'}">on</button>
-                <button class="btn-tool" onclick="deleteFilter(${f.id})" style="width:30px; height:30px; font-size:12px; background:#e64646">×</button>
+                <button class="btn-tool" onclick="viewFilterResults(${f.id})" style="width:30px; height:30px; font-size:14px; background:var(--primary-color)">📂</button>
+                <button class="btn-tool" onclick="editFilter(${f.id})" style="width:30px; height:30px; font-size:14px; background:#f39c12">✏️</button>
+                <button class="btn-tool" onclick="deleteFilter(${f.id})" style="width:30px; height:30px; font-size:14px; background:#e64646">×</button>
             </div>
         </div>
     `).join('');
+}
+
+function editFilter(id) {
+    const f = userFilters.find(item => item.id === id);
+    if (!f) return;
+
+    editingFilterId = id;
+    
+    // Заполняем форму данными
+    document.getElementById('filter-object').value = f.object;
+    document.getElementById('filter-type').value = f.type;
+    document.getElementById('filter-trigger').value = f.trigger;
+    document.getElementById('f-notify').checked = f.notify;
+    document.getElementById('f-save').checked = f.save;
+
+    // Показываем форму и меняем текст кнопки
+    const form = document.getElementById('add-filter-form');
+    const btn = document.getElementById('add-filter-btn');
+    form.style.display = 'block';
+    btn.style.display = 'none';
+    document.querySelector('#add-filter-form .btn-primary').innerText = 'ОБНОВИТЬ ФИЛЬТР';
+}
+
+function viewFilterResults(id) {
+    const f = userFilters.find(item => item.id === id);
+    // Переключаем на гармошку РЕЗУЛЬТАТ
+    document.getElementById('filter-section').classList.remove('active');
+    document.getElementById('result-section').classList.add('active');
+    
+    const container = document.getElementById('results-container');
+    container.innerHTML = `
+        <div style="padding: 20px; text-align: center; color: var(--hint-color);">
+            <p>Результаты по фильтру: <b>${f.trigger}</b></p>
+            <p style="font-size: 12px; margin-top: 10px;">(Здесь будет список срабатываний фильтра)</p>
+        </div>
+    `;
 }
