@@ -117,3 +117,29 @@ function showDownloadLink(url) {
     `;
     document.getElementById('result-section').classList.add('active');
 }
+
+
+function toggleFilterForm() {
+    const form = document.getElementById('add-filter-form');
+    const btn = document.getElementById('add-filter-btn');
+    const isHidden = form.style.display === 'none';
+    form.style.display = isHidden ? 'block' : 'none';
+    btn.style.display = isHidden ? 'none' : 'block';
+}
+
+function renderFilters() {
+    const list = document.getElementById('filters-list');
+    if (userFilters.length === 0) return;
+    
+    list.innerHTML = userFilters.map(f => `
+        <div class="filter-item">
+            <div class="filter-info">
+                <span class="filter-name">${f.trigger}</span>
+                <span class="filter-meta">${f.type} | ${f.object}</span>
+            </div>
+            <div class="filter-actions">
+                <button class="btn-tool" style="width:30px; height:30px; font-size:12px; background:${f.active ? '#31b545' : '#ccc'}">on</button>
+            </div>
+        </div>
+    `).join('');
+}
