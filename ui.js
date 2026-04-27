@@ -222,8 +222,7 @@ function runMainTool() {
     const activeMode = document.querySelector('.mode-btn.active').id.replace('btn-mode-', '');
     
     if (activeMode === 'search') {
-        // Вызываем старую логику поиска (нужно будет обновить в app.js)
-        document.getElementById('search-btn').click(); 
+        performSearch(); 
     } else {
         tg.showAlert("Этот инструмент сейчас находится в разработке");
     }
