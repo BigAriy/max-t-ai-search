@@ -49,7 +49,7 @@ async function previewSource() {
         return;
     }
 
-    // 2. Валидация формата (улучшенный Regex: разрешает слэши и ID в конце)
+    // 2. Валидация формата (разрешает слэши и ID в конце)
     const tgRegex = /^(@[a-zA-Z0-9_]{4,32}|(https?:\/\/)?(t\.me|telegram\.me|telegram\.dog)\/[a-zA-Z0-9_+]{4,}(\/.*)?)$/;
     if (!tgRegex.test(url)) {
         statusDiv.innerText = "Неверный формат. Используйте @username или ссылку t.me/...";
@@ -59,22 +59,19 @@ async function previewSource() {
         saveBtn.disabled = true;
         return;
     }
-	
-	// 3. Нормализация URL (отрезаем хвосты типа /8002, оставляя только адрес группы)
+
+    // 3. Нормализация URL (отрезаем хвосты типа /8002)
     if (url.includes('t.me/') || url.includes('telegram.me/')) {
         const parts = url.split('/');
-        // Ссылка вида https://t.me/group/1234 или t.me/group/1234
-        // Имя группы всегда идет сразу после домена
         const domainIndex = parts.findIndex(p => p.includes('t.me') || p.includes('telegram.me'));
         if (domainIndex !== -1 && parts[domainIndex + 1]) {
             const proto = url.startsWith('http') ? parts[0] + '//' : 'https://';
             url = proto + parts[domainIndex] + '/' + parts[domainIndex + 1];
             console.log("🔗 URL Normalized to:", url);
         }
-		
-    if (!url) return;
-    
-    // Блокируем ввод и кнопку
+    }
+
+    // Блокируем ввод и кнопку перед запросом
     urlInput.disabled = true;
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<span class="spinner-inline"></span> ПРОВЕРКА...';
@@ -92,14 +89,11 @@ async function previewSource() {
         
         if (!response.ok) throw new Error("Not found");
         currentPreview = await response.json();
-		
-		const statusDiv = document.getElementById('preview-status');
+        
         statusDiv.innerHTML = currentPreview.status_text;
         statusDiv.style.display = 'block';
         statusDiv.style.background = currentPreview.is_allowed ? 'rgba(49, 181, 69, 0.1)' : 'rgba(230, 70, 70, 0.1)';
         statusDiv.style.color = currentPreview.is_allowed ? 'var(--text-color)' : '#e64646';
-        
-        saveBtn.disabled = !currentPreview.is_allowed;
         
         const topicsDiv = document.getElementById('topics-select');
         topicsDiv.innerHTML = '';
@@ -116,7 +110,7 @@ async function previewSource() {
             topicsDiv.style.display = 'none';
             document.getElementById('all-topics-row').style.display = 'block';
         }
-        saveBtn.disabled = false;
+        saveBtn.disabled = !currentPreview.is_allowed;
     } catch (e) {
         tg.showAlert("Группа не найдена или доступ запрещен. Проверьте ссылку.");
         currentPreview = null;
