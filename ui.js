@@ -129,16 +129,20 @@ function toggleFilterForm() {
 
 function renderFilters() {
     const list = document.getElementById('filters-list');
-    if (userFilters.length === 0) return;
+    if (!userFilters || userFilters.length === 0) {
+        list.innerHTML = '<p class="placeholder" style="font-size: 12px; color: var(--hint-color); text-align: center; padding: 10px;">У вас пока нет настроенных фильтров</p>';
+        return;
+    }
     
     list.innerHTML = userFilters.map(f => `
         <div class="filter-item">
             <div class="filter-info">
                 <span class="filter-name">${f.trigger}</span>
-                <span class="filter-meta">${f.type} | ${f.object}</span>
+                <span class="filter-meta">${f.type === 'ai' ? '🤖 AI' : '📝 Ключи'} | ${f.object === 'messages' ? 'Сообщения' : 'Люди'}</span>
             </div>
-            <div class="filter-actions">
+            <div class="filter-actions" style="display: flex; gap: 8px;">
                 <button class="btn-tool" style="width:30px; height:30px; font-size:12px; background:${f.active ? '#31b545' : '#ccc'}">on</button>
+                <button class="btn-tool" onclick="deleteFilter(${f.id})" style="width:30px; height:30px; font-size:12px; background:#e64646">×</button>
             </div>
         </div>
     `).join('');
