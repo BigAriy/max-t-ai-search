@@ -23,6 +23,7 @@ async function initUserProfile() {
         setupWebSocketHandlers();
 
         loadUserSources();
+		loadUserFilters();
     } catch (e) {
         console.error("Critical init error:", e);
         document.getElementById('user-name').innerText = "Ошибка входа";
@@ -350,4 +351,50 @@ async function startExport(format) {
     } finally {
         tg.MainButton.hide();
     }
+}
+
+async function loadUserFilters() {
+    try {
+        const url = `${API_BASE}/api/filters/list?initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&t=${Date.now()}`;
+        const response = await fetch(url);
+        userFilters = await response.json();
+        renderFilters();
+        document.getElementById('filter-status').innerText = `${userFilters.filter(f => f.active).length} активных`;
+    } catch (e) { console.error("Error loading filters:", e); }
+}
+
+async function submitNewFilter() {
+    const trigger = document.getElementById('filter-trigger').value.trim();
+    if (!trigger) return tg.showAlert("Введите ключевые слова или промпт");
+
+    try {
+        const response = await fetch(`${API_BASE}/api/filters/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                initData: tg.initData || "",
+                user_id: globalUserId,
+                object: document.getElementById('filter-object').value,
+                type: document.getElementById('filter-type').value,
+                trigger: trigger,
+                notify: document.getElementById('f-notify').checked,
+                save: document.getElementById('f-save').checked
+            })
+        });
+        if (response.ok) {
+            toggleFilterForm();
+            document.getElementById('filter-trigger').value = '';
+            loadUserFilters();
+        }
+    } catch (e) { tg.showAlert("Ошибка при создании фильтра"); }
+}
+
+async function deleteFilter(id) {
+    if (!confirm("Удалить этот фильтр?")) return;
+    try {
+        await fetch(`${API_BASE}/api/filters/${id}?initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}`, {
+            method: 'DELETE'
+        });
+        loadUserFilters();
+    } catch (e) { tg.showAlert("Ошибка при удалении"); }
 }
