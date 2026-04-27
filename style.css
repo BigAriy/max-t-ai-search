@@ -297,3 +297,81 @@ input[type="text"], input[type="date"] {
     background: var(--bg-color);
     color: var(--text-color);
 }
+
+.date-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.date-row input[type="date"] {
+    margin: 0;
+    flex: 1;
+}
+.btn-small {
+    background: var(--secondary-bg);
+    border: 1px solid rgba(0,0,0,0.1);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+.mode-switcher {
+    display: flex;
+    background: var(--secondary-bg);
+    padding: 4px;
+    border-radius: 10px;
+    gap: 4px;
+}
+.mode-btn {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 8px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--hint-color);
+    cursor: pointer;
+}
+.mode-btn.active {
+    background: var(--bg-color);
+    color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.form-row-simple {
+    margin-bottom: 12px;
+}
+.form-row-simple label {
+    display: block;
+    font-size: 12px;
+    color: var(--hint-color);
+    margin-bottom: 5px;
+}
+.segmented-control {
+    display: flex;
+    background: var(--secondary-bg);
+    padding: 2px;
+    border-radius: 8px;
+}
+.segmented-control label {
+    flex: 1;
+    margin: 0;
+}
+.segmented-control input {
+    display: none;
+}
+.segmented-control span {
+    display: block;
+    text-align: center;
+    padding: 6px;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.segmented-control input:checked + span {
+    background: var(--bg-color);
+    color: var(--text-color);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
