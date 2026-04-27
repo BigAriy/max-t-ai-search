@@ -100,3 +100,20 @@ function setupWebSocketHandlers() {
         }
     });
 }
+
+function toggleExportMenu() {
+    const menu = document.getElementById('export-menu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function showDownloadLink(url) {
+    const container = document.getElementById('results-container');
+    container.innerHTML = `
+        <div style="text-align: center; padding: 30px;">
+            <div style="font-size: 40px; margin-bottom: 15px;">📄</div>
+            <p style="margin-bottom: 20px;">Ваш файл готов к скачиванию</p>
+            <button class="btn-primary" onclick="tg.openLink('${url}')">СКАЧАТЬ ФАЙЛ</button>
+        </div>
+    `;
+    document.getElementById('result-section').classList.add('active');
+}
