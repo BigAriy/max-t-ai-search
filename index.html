@@ -107,7 +107,19 @@
                     <input type="date" id="date-to">
                 </div>
 
-                <button class="btn-primary" id="search-btn">НАЙТИ</button>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn-primary" id="search-btn" style="flex: 2;">НАЙТИ</button>
+                    <button class="btn-tool" id="export-mode-btn" onclick="toggleExportMenu()" style="flex: 1; background: var(--hint-color);" title="Экспорт">💾</button>
+                </div>
+
+                <div id="export-menu" style="display:none; margin-top: 10px; padding: 10px; background: var(--secondary-bg); border-radius: 8px;">
+                    <p style="font-size: 12px; margin-bottom: 8px;">Выберите формат экспорта:</p>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn-secondary" onclick="startExport('excel')" style="font-size: 12px; padding: 5px;">Excel</button>
+                        <button class="btn-secondary" onclick="startExport('pdf')" style="font-size: 12px; padding: 5px;">PDF</button>
+                        <button class="btn-secondary" onclick="startExport('markdown')" style="font-size: 12px; padding: 5px;">Markdown</button>
+                    </div>
+                </div>
             </div>
         </div>
 
