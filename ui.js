@@ -8,28 +8,30 @@ function toggleAddForm() {
 
 function renderResults(messages) {
     const container = document.getElementById('results-container');
+    const resultActions = document.querySelector('.result-actions');
     document.getElementById('result-count').innerText = messages.length;
     container.innerHTML = '';
 
-    if (messages.length === 0) {
+    if (!messages || messages.length === 0) {
         container.innerHTML = '<p class="hint">Ничего не найдено</p>';
-        document.getElementById('export-btn').style.display = 'none';
+        if (resultActions) resultActions.style.display = 'none';
         return;
     }
 
     messages.forEach(m => {
         const card = document.createElement('div');
         card.className = 'message-card';
+        const safeText = (m.text || "").replace(/\n/g, '<br>');
         card.innerHTML = `
             <div class="message-meta">
                 <span class="m-date">${m.date}</span>
                 <span class="m-user">User ID: ${m.sender}</span>
             </div>
-            <div class="m-text">${m.text.replace(/\n/g, '<br>')}</div>
+            <div class="m-text">${safeText}</div>
         `;
         container.appendChild(card);
     });
-    document.getElementById('export-btn').style.display = 'block';
+    if (resultActions) resultActions.style.display = 'block';
 }
 
 function exportResults() {
