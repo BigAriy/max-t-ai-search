@@ -192,3 +192,39 @@ function viewFilterResults(id) {
         </div>
     `;
 }
+
+function setBeginningDate() {
+    document.getElementById('date-from').value = '2000-01-01';
+}
+
+function setTodayDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date-to').value = today;
+}
+
+function switchToolMode(mode) {
+    // 1. Переключаем кнопки
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`btn-mode-${mode}`).classList.add('active');
+
+    // 2. Переключаем панели настроек
+    document.querySelectorAll('.tool-pane').forEach(pane => pane.style.display = 'none');
+    document.getElementById(`pane-${mode}`).style.display = 'block';
+
+    // 3. Меняем текст главной кнопки
+    const actionBtn = document.getElementById('main-action-btn');
+    if (mode === 'search') actionBtn.innerText = 'НАЙТИ';
+    else if (mode === 'chat') actionBtn.innerText = 'СПРОСИТЬ ИИ';
+    else if (mode === 'analysis') actionBtn.innerText = 'АНАЛИЗИРОВАТЬ';
+}
+
+function runMainTool() {
+    const activeMode = document.querySelector('.mode-btn.active').id.replace('btn-mode-', '');
+    
+    if (activeMode === 'search') {
+        // Вызываем старую логику поиска (нужно будет обновить в app.js)
+        document.getElementById('search-btn').click(); 
+    } else {
+        tg.showAlert("Этот инструмент сейчас находится в разработке");
+    }
+}
