@@ -367,26 +367,38 @@ async function submitNewFilter() {
     const trigger = document.getElementById('filter-trigger').value.trim();
     if (!trigger) return tg.showAlert("Введите ключевые слова или промпт");
 
+    const payload = {
+        initData: tg.initData || "",
+        user_id: globalUserId,
+        object: document.getElementById('filter-object').value,
+        type: document.getElementById('filter-type').value,
+        trigger: trigger,
+        notify: document.getElementById('f-notify').checked,
+        save: document.getElementById('f-save').checked
+    };
+
     try {
-        const response = await fetch(`${API_BASE}/api/filters/add`, {
-            method: 'POST',
+        const method = editingFilterId ? 'PUT' : 'POST';
+        const url = editingFilterId 
+            ? `${API_BASE}/api/filters/${editingFilterId}` 
+            : `${API_BASE}/api/filters/add`;
+
+        const response = await fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                initData: tg.initData || "",
-                user_id: globalUserId,
-                object: document.getElementById('filter-object').value,
-                type: document.getElementById('filter-type').value,
-                trigger: trigger,
-                notify: document.getElementById('f-notify').checked,
-                save: document.getElementById('f-save').checked
-            })
+            body: JSON.stringify(payload)
         });
+
         if (response.ok) {
             toggleFilterForm();
-            document.getElementById('filter-trigger').value = '';
             loadUserFilters();
+        } else {
+            tg.showAlert("Ошибка сохранения");
         }
-    } catch (e) { tg.showAlert("Ошибка при создании фильтра"); }
+    } catch (e) { 
+        console.error(e);
+        tg.showAlert("Ошибка связи с сервером"); 
+    }
 }
 
 async function deleteFilter(id) {
