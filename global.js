@@ -19,3 +19,5 @@ let userProfile = null;
 let sourcesCache = {}; // Глобальный кэш для хранения описаний
 // Глобальная переменная для ID пользователя (резервный вход)
 let globalUserId = new URLSearchParams(window.location.search).get('user_id');
+
+let userFilters = []; // Список активных фильтров пользователя
