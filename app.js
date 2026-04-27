@@ -1,3 +1,6 @@
+
+
+
 // Показ данных профиля (Личный кабинет)
 document.getElementById('settings-btn').addEventListener('click', () => {
     if (!userProfile) return tg.showAlert("Данные профиля еще не загружены");
@@ -22,7 +25,7 @@ document.querySelectorAll('.accordion-header').forEach(header => {
 
 let lastResults = [];
 
-document.getElementById('search-btn').addEventListener('click', async () => {
+async function performSearch() {
     const query = document.getElementById('search-query').value;
     const dateFrom = document.getElementById('date-from').value;
     const dateTo = document.getElementById('date-to').value;
@@ -33,7 +36,8 @@ document.getElementById('search-btn').addEventListener('click', async () => {
         return tg.showAlert("Выберите источники или разделы для поиска");
     }
 
-    document.getElementById('search-btn').innerText = "ПОИСК...";
+    const actionBtn = document.getElementById('main-action-btn');
+    actionBtn.innerText = "ПОИСК...";
     try {
         let url = `${API_BASE}/api/messages/search?initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&query=${encodeURIComponent(query)}&d_from=${dateFrom}&d_to=${dateTo}`;
         
@@ -51,7 +55,7 @@ document.getElementById('search-btn').addEventListener('click', async () => {
     } catch (e) {
         tg.showAlert("Ошибка при поиске");
     }
-    document.getElementById('search-btn').innerText = "НАЙТИ";
-});
+    actionBtn.innerText = "НАЙТИ";
+}
 
 
