@@ -23,7 +23,6 @@ document.querySelectorAll('.accordion-header').forEach(header => {
 		    });
 		});
 
-let lastResults = [];
 
 async function performSearch() {
     const query = document.getElementById('search-query').value;
