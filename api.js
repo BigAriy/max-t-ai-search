@@ -340,13 +340,22 @@ async function startExport(format) {
         const response = await fetch(url);
         const result = await response.json();
         
+        // Сначала гасим индикацию прогресса, чтобы интерфейс не зависал
+        tg.MainButton.hide();
+        tg.MainButton.hideProgress();
+
         if (result.download_url) {
             showDownloadLink(result.download_url);
+            // Пытаемся закрыть меню, только если оно существует (в текущем HTML его нет)
             toggleExportMenu();
         } else {
-            tg.showAlert("Ошибка при создании файла");
+            tg.showAlert("Ошибка: сервер не вернул ссылку на файл");
         }
     } catch (e) {
+        // Если произошла ошибка, сначала убираем крутилку, потом показываем текст
+        tg.MainButton.hide();
+        tg.MainButton.hideProgress();
+        console.error("Export error:", e);
         tg.showAlert("Ошибка связи с сервером");
     } finally {
         tg.MainButton.hide();
