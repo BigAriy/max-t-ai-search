@@ -47,6 +47,9 @@ async function performSearch() {
         const response = await fetch(url);
         lastResults = await response.json();
         
+        // Сохраняем результаты в сессию браузера
+        sessionStorage.setItem('last_search_results', JSON.stringify(lastResults));
+
         renderResults(lastResults);
         
         // Авто-переключение гармошек
