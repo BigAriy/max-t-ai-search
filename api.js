@@ -24,7 +24,17 @@ async function initUserProfile() {
 
         loadUserSources();
 		loadUserFilters();
-    } catch (e) {
+    // Восстановление результатов поиска из памяти сессии
+        const savedResults = sessionStorage.getItem('last_search_results');
+        if (savedResults) {
+            try {
+                lastResults = JSON.parse(savedResults);
+                // Отрисовываем результаты и открываем нужную гармошку
+                renderResults(lastResults);
+                document.getElementById('result-section').classList.add('active');
+                console.log("♻️ Search results restored from session storage");
+            } catch (e) { console.error("Restore results error:", e); }
+        }
         console.error("Critical init error:", e);
         document.getElementById('user-name').innerText = "Ошибка входа";
     }
