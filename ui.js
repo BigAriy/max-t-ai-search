@@ -21,13 +21,22 @@ function renderResults(messages) {
     messages.forEach(m => {
         const card = document.createElement('div');
         card.className = 'message-card';
-        const safeText = (m.text || "").replace(/\n/g, '<br>');
+        
+        // Рендерим Markdown
+        const renderedText = marked.parse(m.text || "");
+        
+        // Формируем ссылку на сообщение
+        let msgLink = "";
+        if (m.chat_username) {
+            msgLink = `<a href="https://t.me/${m.chat_username}/${m.tg_id}" target="_blank" style="text-decoration:none; margin-left:8px;">🔗</a>`;
+        }
+
         card.innerHTML = `
             <div class="message-meta">
                 <span class="m-date">${m.date}</span>
-                <span class="m-user">${m.sender}</span>
+                <span class="m-user">${m.sender}${msgLink}</span>
             </div>
-            <div class="m-text">${safeText}</div>
+            <div class="m-text">${renderedText}</div>
         `;
         container.appendChild(card);
     });
@@ -114,11 +123,16 @@ function showDownloadLink(url) {
     const container = document.getElementById('results-container');
     if (!container) return;
     
+    // Прячем иконки экспорта на время показа ссылки
+    const resultActions = document.querySelector('.result-actions');
+    if (resultActions) resultActions.style.display = 'none';
+
     container.innerHTML = `
         <div style="text-align: center; padding: 30px;">
             <div style="font-size: 40px; margin-bottom: 15px;">📄</div>
             <p style="margin-bottom: 20px;">Ваш файл готов к скачиванию</p>
             <button class="btn-primary" onclick="tg.openLink('${url}')">СКАЧАТЬ ФАЙЛ</button>
+            <button class="btn-secondary" style="margin-top:10px; border:none;" onclick="renderResults(lastResults)">Вернуться к результатам</button>
         </div>
     `;
     const resSection = document.getElementById('result-section');
