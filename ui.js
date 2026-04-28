@@ -25,13 +25,13 @@ function renderResults(messages) {
         card.innerHTML = `
             <div class="message-meta">
                 <span class="m-date">${m.date}</span>
-                <span class="m-user">User ID: ${m.sender}</span>
+                <span class="m-user">${m.sender}</span>
             </div>
             <div class="m-text">${safeText}</div>
         `;
         container.appendChild(card);
     });
-    if (resultActions) resultActions.style.display = 'block';
+    if (resultActions) resultActions.style.display = 'flex';
 }
 
 function exportResults() {
