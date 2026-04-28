@@ -25,10 +25,10 @@ function renderResults(messages) {
         // Рендерим Markdown
         const renderedText = marked.parse(m.text || "");
         
-        // Формируем ссылку на сообщение
+        // Формируем ссылку на сообщение через API Telegram
         let msgLink = "";
         if (m.chat_username) {
-            msgLink = `<a href="https://t.me/${m.chat_username}/${m.tg_id}" target="_blank" style="text-decoration:none; margin-left:8px;">🔗</a>`;
+            msgLink = `<span onclick="openTelegramMessage('${m.chat_username}', ${m.tg_id})" style="cursor:pointer; margin-left:8px; font-size: 14px;">🔗</span>`;
         }
 
         card.innerHTML = `
@@ -247,4 +247,9 @@ function runMainTool() {
     } else {
         tg.showAlert("Этот инструмент сейчас находится в разработке");
     }
+}
+
+function openTelegramMessage(username, msgId) {
+    // Используем специальный метод Mini App для открытия внутренних ссылок
+    tg.openTelegramLink(`https://t.me/${username}/${msgId}`);
 }
