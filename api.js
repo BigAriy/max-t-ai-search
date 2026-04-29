@@ -430,3 +430,43 @@ async function deleteFilter(id) {
         loadUserFilters();
     } catch (e) { tg.showAlert("Ошибка при удалении"); }
 }
+
+async function performAIAnalysis() {
+    const prompt = document.getElementById('ai-chat-prompt').value.trim();
+    const dateFrom = document.getElementById('date-from').value;
+    const dateTo = document.getElementById('date-to').value;
+    const selectedChats = Array.from(document.querySelectorAll('.source-check:checked')).map(el => el.value);
+
+    if (!prompt) return tg.showAlert("Введите ваш вопрос для ИИ");
+    if (selectedChats.length === 0) return tg.showAlert("Выберите источники для анализа");
+
+    const actionBtn = document.getElementById('main-action-btn');
+    actionBtn.innerText = "ИИ ДУМАЕТ...";
+    actionBtn.disabled = true;
+
+    try {
+        const response = await fetch(`${API_BASE}/api/ai/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                initData: tg.initData || "",
+                user_id: globalUserId,
+                chat_ids: selectedChats.join(','),
+                d_from: dateFrom,
+                d_to: dateTo,
+                prompt: prompt
+            })
+        });
+
+        const result = await response.json();
+        renderAIResult(result.answer);
+        
+        document.getElementById('action-section').classList.remove('active');
+        document.getElementById('result-section').classList.add('active');
+    } catch (e) {
+        tg.showAlert("Ошибка при обращении к ИИ");
+    } finally {
+        actionBtn.innerText = "СПРОСИТЬ ИИ";
+        actionBtn.disabled = false;
+    }
+}
