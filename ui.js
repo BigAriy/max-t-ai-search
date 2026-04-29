@@ -263,6 +263,7 @@ function runMainTool() {
     } else if (activeMode === 'analysis') {
         const tool = document.getElementById('analysis-tool').value;
         if (tool === 'experts') performExpertsAnalysis();
+        else if (tool === 'graph') performGraphAnalysis();
         else tg.showAlert("Этот инструмент в разработке");
     } else {
         tg.showAlert("Этот инструмент сейчас находится в разработке");
@@ -353,4 +354,41 @@ function renderExpertsResult(experts) {
         // Для списка экспертов Excel может быть полезен, но PDF/TXT тоже ок.
         // Пока оставляем логику как есть.
     }
+}
+
+function renderGraphResult(data) {
+    const container = document.getElementById('results-container');
+    const resultActions = document.querySelector('.result-actions');
+    document.getElementById('result-count').innerText = data.links.length;
+    container.innerHTML = '';
+
+    // 1. Блок вердикта ИИ
+    const aiCard = document.createElement('div');
+    aiCard.className = 'message-card';
+    aiCard.style.borderLeft = '4px solid #9b59b6';
+    aiCard.innerHTML = `
+        <div class="message-meta"><span class="m-user">🟣 Анализ структуры сообщества</span></div>
+        <div class="m-text">${marked.parse(data.verdict)}</div>
+    `;
+    container.appendChild(aiCard);
+
+    // 2. Список топ-связей
+    if (data.links.length > 0) {
+        const listTitle = document.createElement('p');
+        listTitle.style = 'font-size:12px; font-weight:bold; margin: 15px 0 10px; color:var(--hint-color);';
+        listTitle.innerText = 'ТОП ВЗАИМОДЕЙСТВИЙ (ОТВЕТОВ):';
+        container.appendChild(listTitle);
+
+        data.links.forEach(link => {
+            const row = document.createElement('div');
+            row.style = 'display:flex; justify-content:space-between; font-size:13px; padding:8px; background:var(--bg-color); border-radius:8px; margin-bottom:4px; border:1px solid rgba(0,0,0,0.03);';
+            row.innerHTML = `
+                <span><b>${link.source}</b> ➔ ${link.target}</span>
+                <span style="color:var(--primary-color); font-weight:bold;">${link.value}</span>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    if (resultActions) resultActions.style.display = 'flex';
 }
