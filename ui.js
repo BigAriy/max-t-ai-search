@@ -258,6 +258,8 @@ function runMainTool() {
     
     if (activeMode === 'search') {
         performSearch(); 
+    } else if (activeMode === 'chat') {
+        performAIAnalysis();
     } else {
         tg.showAlert("Этот инструмент сейчас находится в разработке");
     }
@@ -266,4 +268,50 @@ function runMainTool() {
 function openTelegramMessage(username, msgId) {
     // Используем специальный метод Mini App для открытия внутренних ссылок
     tg.openTelegramLink(`https://t.me/${username}/${msgId}`);
+}
+
+function renderAIResult(text) {
+    const container = document.getElementById('results-container');
+    const resultActions = document.querySelector('.result-actions');
+    document.getElementById('result-count').innerText = "AI";
+    
+    container.innerHTML = `
+        <div class="message-card" style="border-left: 4px solid var(--primary-color); background: rgba(51, 144, 236, 0.03);">
+            <div class="message-meta">
+                <span class="m-user">🤖 Ответ ИИ-ассистента</span>
+            </div>
+            <div class="m-text" id="ai-response-text">${marked.parse(text)}</div>
+        </div>
+    `;
+
+    if (resultActions) {
+        resultActions.style.display = 'flex';
+        // Прячем иконку XLS для текста ИИ, так как она там не нужна
+        const xlsBtn = resultActions.querySelector('.export-btn[onclick*="excel"]');
+        if (xlsBtn) xlsBtn.style.display = 'none';
+        
+        // Подменяем функции экспорта для этого случая
+        const exportBtns = resultActions.querySelectorAll('.export-btn');
+        exportBtns.forEach(btn => {
+            const fmt = btn.querySelector('span').innerText.toLowerCase().replace('htm', 'html');
+            if (fmt !== 'xls') {
+                btn.onclick = () => exportRawText(text, fmt);
+            }
+        });
+    }
+}
+
+async function exportRawText(text, format) {
+    tg.MainButton.setText("СОХРАНЕНИЕ...");
+    tg.MainButton.show();
+    try {
+        const response = await fetch(`${API_BASE}/api/export/raw-text`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, format })
+        });
+        const result = await response.json();
+        if (result.download_url) showDownloadLink(result.download_url);
+    } catch (e) { tg.showAlert("Ошибка экспорта"); }
+    finally { tg.MainButton.hide(); }
 }
