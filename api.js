@@ -470,3 +470,40 @@ async function performAIAnalysis() {
         actionBtn.disabled = false;
     }
 }
+
+async function performExpertsAnalysis() {
+    const dateFrom = document.getElementById('date-from').value;
+    const dateTo = document.getElementById('date-to').value;
+    const selectedChats = Array.from(document.querySelectorAll('.source-check:checked')).map(el => el.value);
+
+    if (selectedChats.length === 0) return tg.showAlert("Выберите источники для анализа");
+
+    const actionBtn = document.getElementById('main-action-btn');
+    actionBtn.innerText = "АНАЛИЗ ЭКСПЕРТОВ...";
+    actionBtn.disabled = true;
+
+    try {
+        const response = await fetch(`${API_BASE}/api/analysis/experts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                initData: tg.initData || "",
+                user_id: globalUserId,
+                chat_ids: selectedChats.join(','),
+                d_from: dateFrom,
+                d_to: dateTo
+            })
+        });
+
+        const result = await response.json();
+        renderExpertsResult(result.experts);
+        
+        document.getElementById('action-section').classList.remove('active');
+        document.getElementById('result-section').classList.add('active');
+    } catch (e) {
+        tg.showAlert("Ошибка при анализе экспертов");
+    } finally {
+        actionBtn.innerText = "АНАЛИЗИРОВАТЬ";
+        actionBtn.disabled = false;
+    }
+}
