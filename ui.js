@@ -260,6 +260,10 @@ function runMainTool() {
         performSearch(); 
     } else if (activeMode === 'chat') {
         performAIAnalysis();
+    } else if (activeMode === 'analysis') {
+        const tool = document.getElementById('analysis-tool').value;
+        if (tool === 'experts') performExpertsAnalysis();
+        else tg.showAlert("Этот инструмент в разработке");
     } else {
         tg.showAlert("Этот инструмент сейчас находится в разработке");
     }
@@ -314,4 +318,39 @@ async function exportRawText(text, format) {
         if (result.download_url) showDownloadLink(result.download_url);
     } catch (e) { tg.showAlert("Ошибка экспорта"); }
     finally { tg.MainButton.hide(); }
+}
+
+function renderExpertsResult(experts) {
+    const container = document.getElementById('results-container');
+    const resultActions = document.querySelector('.result-actions');
+    document.getElementById('result-count').innerText = experts.length;
+    container.innerHTML = '';
+
+    if (!experts || experts.length === 0) {
+        container.innerHTML = '<p class="hint">Активных пользователей не найдено</p>';
+        if (resultActions) resultActions.style.display = 'none';
+        return;
+    }
+
+    experts.forEach(exp => {
+        const card = document.createElement('div');
+        card.className = 'message-card';
+        card.style.borderLeft = '4px solid #f39c12';
+        card.innerHTML = `
+            <div class="message-meta">
+                <span class="m-user" style="color:var(--text-color)">👤 ${exp.name}</span>
+                <span class="status-badge" style="background:#f39c12; color:white; padding:2px 6px; border-radius:4px;">${exp.count} сообщ.</span>
+            </div>
+            <div class="m-text" style="font-style: italic; color: var(--hint-color); margin-top:5px;">
+                ${exp.bio}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+    
+    if (resultActions) {
+        resultActions.style.display = 'flex';
+        // Для списка экспертов Excel может быть полезен, но PDF/TXT тоже ок.
+        // Пока оставляем логику как есть.
+    }
 }
