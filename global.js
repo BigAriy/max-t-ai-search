@@ -23,3 +23,4 @@ let globalUserId = new URLSearchParams(window.location.search).get('user_id');
 let userFilters = []; // Список активных фильтров пользователя
 let editingFilterId = null; // ID редактируемого фильтра (null = создание)
 let lastResults = []; // Глобальное хранилище результатов поиска
+let currentSearchOffset = 0; // Текущая позиция пагинации
