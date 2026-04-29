@@ -9,6 +9,9 @@ function toggleAddForm() {
 function renderResults(messages) {
     const container = document.getElementById('results-container');
     const resultActions = document.querySelector('.result-actions');
+    
+    // Очищаем контейнер только если это новый поиск (offset был сброшен)
+    // Но так как renderResults получает ВЕСЬ массив lastResults, мы его перерисовываем целиком
     document.getElementById('result-count').innerText = messages.length;
     container.innerHTML = '';
 
@@ -41,6 +44,17 @@ function renderResults(messages) {
         container.appendChild(card);
     });
     if (resultActions) resultActions.style.display = 'flex';
+
+    // Если количество результатов кратно странице, вероятно есть еще данные
+    const perPage = 50; // Здесь можно будет динамически получать из настроек
+    if (messages.length > 0 && messages.length % perPage === 0) {
+        const moreBtn = document.createElement('button');
+        moreBtn.className = 'btn-secondary';
+        moreBtn.style.margin = '20px 0';
+        moreBtn.innerText = 'ПОКАЗАТЬ ЕЩЕ';
+        moreBtn.onclick = () => performSearch(true);
+        container.appendChild(moreBtn);
+    }
 }
 
 function exportResults() {
