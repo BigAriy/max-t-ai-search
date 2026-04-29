@@ -24,7 +24,7 @@ document.querySelectorAll('.accordion-header').forEach(header => {
 		});
 
 
-async function performSearch() {
+async function performSearch(isLoadMore = false) {
     const query = document.getElementById('search-query').value;
     const dateFrom = document.getElementById('date-from').value;
     const dateTo = document.getElementById('date-to').value;
@@ -35,16 +35,25 @@ async function performSearch() {
         return tg.showAlert("Выберите источники или разделы для поиска");
     }
 
+    if (!isLoadMore) {
+        currentSearchOffset = 0;
+        lastResults = [];
+    }
+
     const actionBtn = document.getElementById('main-action-btn');
-    actionBtn.innerText = "ПОИСК...";
+    const originalBtnText = actionBtn.innerText;
+    actionBtn.innerText = isLoadMore ? "ЗАГРУЗКА..." : "ПОИСК...";
     try {
-        let url = `${API_BASE}/api/messages/search?initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&query=${encodeURIComponent(query)}&d_from=${dateFrom}&d_to=${dateTo}`;
+        let url = `${API_BASE}/api/messages/search?initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&query=${encodeURIComponent(query)}&d_from=${dateFrom}&d_to=${dateTo}&offset=${currentSearchOffset}`;
         
         if (selectedChats.length > 0) url += `&chat_ids=${selectedChats.join(',')}`;
         if (selectedTopics.length > 0) url += `&topic_ids=${selectedTopics.join(',')}`;
 
         const response = await fetch(url);
-        lastResults = await response.json();
+        const newBatch = await response.json();
+        
+        lastResults = [...lastResults, ...newBatch];
+        currentSearchOffset += newBatch.length;
         
         // Сохраняем результаты в сессию браузера
         sessionStorage.setItem('last_search_results', JSON.stringify(lastResults));
@@ -55,9 +64,10 @@ async function performSearch() {
         document.getElementById('action-section').classList.remove('active');
         document.getElementById('result-section').classList.add('active');
     } catch (e) {
+        console.error(e);
         tg.showAlert("Ошибка при поиске");
     }
-    actionBtn.innerText = "НАЙТИ";
+    actionBtn.innerText = originalBtnText;
 }
 
 
