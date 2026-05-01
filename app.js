@@ -30,6 +30,7 @@ async function performSearch(isLoadMore = false) {
     const dateTo = document.getElementById('date-to').value;
     const selectedChats = Array.from(document.querySelectorAll('.source-check:checked')).map(el => el.value);
     const selectedTopics = Array.from(document.querySelectorAll('.topic-check:checked')).map(el => el.value);
+    const searchObj = document.querySelector('input[name="s-obj"]:checked').value;
 
     if (selectedChats.length === 0 && selectedTopics.length === 0) {
         return tg.showAlert("Выберите источники или разделы для поиска");
@@ -44,7 +45,7 @@ async function performSearch(isLoadMore = false) {
     const originalBtnText = actionBtn.innerText;
     actionBtn.innerText = isLoadMore ? "ЗАГРУЗКА..." : "ПОИСК...";
     try {
-        let url = `${API_BASE}/api/messages/search?initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&query=${encodeURIComponent(query)}&d_from=${dateFrom}&d_to=${dateTo}&offset=${currentSearchOffset}`;
+        let url = `${API_BASE}/api/messages/search?initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&query=${encodeURIComponent(query)}&d_from=${dateFrom}&d_to=${dateTo}&offset=${currentSearchOffset}&search_obj=${searchObj}`;
         
         if (selectedChats.length > 0) url += `&chat_ids=${selectedChats.join(',')}`;
         if (selectedTopics.length > 0) url += `&topic_ids=${selectedTopics.join(',')}`;
