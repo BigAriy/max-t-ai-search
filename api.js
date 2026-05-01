@@ -333,6 +333,7 @@ async function toggleTopics(chatId) {
 async function startExport(format) {
     const query = document.getElementById('search-query').value;
     const searchObj = document.querySelector('input[name="s-obj"]:checked').value;
+	const searchEng = document.querySelector('input[name="s-eng"]:checked').value;
     const dateFrom = document.getElementById('date-from').value;
     const dateTo = document.getElementById('date-to').value;
     const selectedChats = Array.from(document.querySelectorAll('.source-check:checked')).map(el => el.value);
@@ -345,7 +346,7 @@ async function startExport(format) {
     tg.MainButton.showProgress();
 
     try {
-		let url = `${API_BASE}/api/messages/export?format=${format}&initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&chat_ids=${selectedChats.join(',')}&search_obj=${searchObj}&query=${encodeURIComponent(query)}`;
+		let url = `${API_BASE}/api/messages/export?format=${format}&initData=${encodeURIComponent(tg.initData || "")}&user_id=${globalUserId || ""}&chat_ids=${selectedChats.join(',')}&search_obj=${searchObj}&search_eng=${searchEng}&query=${encodeURIComponent(query)}`;
         if (selectedTopics.length > 0) url += `&topic_ids=${selectedTopics.join(',')}`;
         if (dateFrom) url += `&d_from=${dateFrom}`;
         if (dateTo) url += `&d_to=${dateTo}`;
